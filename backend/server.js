@@ -526,6 +526,48 @@ app.get("/api/tdarr/summary", async (req, res) => {
   }
 });
 
+app.get('/api/config', (req, res) => {
+  try {
+    const config = loadConfig();
+    const safeConfig = JSON.parse(JSON.stringify(config));
+    if (safeConfig.proxmox?.tokenSecret) safeConfig.proxmox.tokenSecret = '********';
+    if (safeConfig.unraid?.apiKey) safeConfig.unraid.apiKey = '********';
+    if (safeConfig.media?.sonarr?.apiKey) safeConfig.media.sonarr.apiKey = '********';
+    if (safeConfig.media?.radarr?.apiKey) safeConfig.media.radarr.apiKey = '********';
+    if (safeConfig.prowlarr?.apiKey) safeConfig.prowlarr.apiKey = '********';
+    if (safeConfig.qbittorrent?.password) safeConfig.qbittorrent.password = '********';
+    res.json(safeConfig);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/config', (req, res) => {
+  try {
+    const configPath = '/app/config/services.json';
+    const backupPath = `/app/config/services.json.bak-${Date.now()}`;
+    const current = fs.readFileSync(configPath, 'utf8');
+    fs.writeFileSync(backupPath, current);
+    
+    const incoming = req.body;
+    if (!incoming || typeof incoming !== 'object') {
+      return res.status(400).json({ error: 'Invalid config payload' });
+    }
+    if (!Array.isArray(incoming.services)) {
+      return res.status(400).json({ error: 'Config must include services array' });
+    }
+    
+    fs.writeFileSync(configPath, JSON.stringify(incoming, null, 2));
+    res.json({
+      success: true,
+      message: 'Config saved',
+      backup: backupPath
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`KonHomeLab backend running on port ${PORT}`);
 });
