@@ -5,6 +5,7 @@ export default function SettingsPanel() {
   const [configText, setConfigText] = useState('');
   const [status, setStatus] = useState('');
   const [open, setOpen] = useState(false);
+  const [testResults, setTestResults] = useState({});
 
   useEffect(() => {
     loadConfig();
@@ -30,6 +31,26 @@ export default function SettingsPanel() {
     }
   }
 
+  async function testService(type) {
+    setTestResults(prev => ({ ...prev, [type]: { testing: true } }));
+    try {
+      const res = await axios.post(`http://${window.location.hostname}:4000/api/test-service`, { type });
+      setTestResults(prev => ({ ...prev, [type]: res.data }));
+    } catch (err) {
+      setTestResults(prev => ({ ...prev, [type]: { ok: false, message: err.message } }));
+    }
+  }
+
+  const services = [
+    { key: 'proxmox', name: 'Proxmox' },
+    { key: 'unraid', name: 'Unraid' },
+    { key: 'sonarr', name: 'Sonarr' },
+    { key: 'radarr', name: 'Radarr' },
+    { key: 'qbittorrent', name: 'qBittorrent' },
+    { key: 'prowlarr', name: 'Prowlarr' },
+    { key: 'tdarr', name: 'Tdarr' }
+  ];
+
   return (
     <section id="settings" className="section">
       <div className="section-header">
@@ -46,34 +67,109 @@ export default function SettingsPanel() {
         <div className="service-card" style={{ minHeight: 'auto' }}>
           <div className="card-top">
             <div>
-              <h3>services.json Editor</h3>
+              <h3>Configuration Management</h3>
               <p>
-                Edit carefully. A backup is created automatically on every save.
-                Masked secrets must be replaced with real values before saving if changed.
+                Edit configuration and test service connections.
+                Backups are created automatically on every save.
               </p>
             </div>
             <div className="status-dot online" />
           </div>
 
-          <textarea
-            value={configText}
-            onChange={(e) => setConfigText(e.target.value)}
-            spellCheck="false"
-            style={{
-              width: '100%',
-              minHeight: '520px',
-              marginTop: '24px',
-              background: '#070b10',
-              color: '#dbeafe',
-              border: '1px solid rgba(148,163,184,.22)',
-              borderRadius: '16px',
-              padding: '18px',
-              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-              fontSize: '13px',
-              lineHeight: 1.6,
-              resize: 'vertical'
-            }}
-          />
+          {/* Connection Test Buttons */}
+          <div style={{ marginTop: '24px' }}>
+            <h4 style={{ marginBottom: '12px', color: '#e2e8f0' }}>Connection Tests</h4>
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+              gap: '12px',
+              marginBottom: '24px'
+            }}>
+              {services.map(service => {
+                const result = testResults[service.key];
+                return (
+                  <button
+                    key={service.key}
+                    className="button"
+                    onClick={() => testService(service.key)}
+                    disabled={result?.testing}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '12px 16px',
+                      backgroundColor: result?.ok === true ? '#065f46' : 
+                                     result?.ok === false ? '#7f1d1d' : '#1e293b'
+                    }}
+                  >
+                    <span>Test {service.name}</span>
+                    <div 
+                      className={`status-dot ${
+                        result?.testing ? 'offline' : 
+                        result?.ok === true ? 'online' : 
+                        result?.ok === false ? 'offline' : ''
+                      }`}
+                      style={{ marginLeft: '8px' }}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Test Results */}
+            {Object.keys(testResults).length > 0 && (
+              <div style={{ 
+                background: '#0f172a', 
+                border: '1px solid rgba(148,163,184,.22)',
+                borderRadius: '8px',
+                padding: '16px',
+                marginBottom: '24px'
+              }}>
+                <h4 style={{ marginBottom: '12px', color: '#e2e8f0' }}>Test Results</h4>
+                {Object.entries(testResults).map(([key, result]) => (
+                  <div key={key} style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    marginBottom: '8px',
+                    color: result.ok ? '#10b981' : '#ef4444'
+                  }}>
+                    <strong style={{ minWidth: '100px' }}>
+                      {services.find(s => s.key === key)?.name}:
+                    </strong>
+                    <span style={{ marginLeft: '12px' }}>
+                      {result.testing ? 'Testing...' : result.message}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* JSON Editor */}
+          <div>
+            <h4 style={{ marginBottom: '12px', color: '#e2e8f0' }}>Raw Configuration</h4>
+            <p style={{ fontSize: '14px', color: '#94a3b8', marginBottom: '12px' }}>
+              Masked secrets must be replaced with real values before saving if changed.
+            </p>
+            <textarea
+              value={configText}
+              onChange={(e) => setConfigText(e.target.value)}
+              spellCheck="false"
+              style={{
+                width: '100%',
+                minHeight: '400px',
+                background: '#070b10',
+                color: '#dbeafe',
+                border: '1px solid rgba(148,163,184,.22)',
+                borderRadius: '16px',
+                padding: '18px',
+                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                fontSize: '13px',
+                lineHeight: 1.6,
+                resize: 'vertical'
+              }}
+            />
+          </div>
 
           <div
             style={{
