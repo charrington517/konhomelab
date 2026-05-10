@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import AlertCenter from "./components/AlertCenter";
 import TdarrPanel from "./components/TdarrPanel";
+import QuickLaunch from "./components/QuickLaunch";
 
 const API_URL = window.location.hostname === "localhost"
   ? "http://localhost:4000/api/services"
