@@ -109,6 +109,8 @@ function App() {
 
         <section id="alerts">
           <AlertCenter />
+
+        <QuickLaunch />
         </section>
 
         {proxmox && proxmox.enabled && (
