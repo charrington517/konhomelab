@@ -101,7 +101,7 @@ function App() {
   const offline = services.filter(s => s.status === "offline").length;
 
   return (
-    <div className="app-shell">
+    <div className="app-shell compact-ops">
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-mark">KH</div>
