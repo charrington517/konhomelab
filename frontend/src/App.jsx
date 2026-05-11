@@ -6,6 +6,7 @@ import QuickLaunch from "./components/QuickLaunch";
 import SettingsPanel from "./components/SettingsPanel";
 import GpuTelemetry from "./components/GpuTelemetry";
 import SystemHealthOverview from "./components/SystemHealthOverview";
+import RecentActivity from "./components/RecentActivity";
 import AiStackOverview from "./components/AiStackOverview";
 import InfrastructureOperations from "./components/InfrastructureOperations";
 import MediaOperations from "./components/MediaOperations";
@@ -18,6 +19,7 @@ const API_URL = window.location.hostname === "localhost"
 
 const BASE_NAV_ITEMS = [
   { id: "overview", label: "Overview", short: "OV" },
+  { id: "activity", label: "Activity", short: "AC" },
   { id: "infrastructure-ops", label: "Ops", short: "OP" },
   { id: "alerts", label: "Alerts", short: "AL" },
   { id: "quicklaunch", label: "Quick Launch", short: "QL" },
@@ -155,6 +157,8 @@ function App() {
         </section>
 
         <SystemHealthOverview />
+
+        <RecentActivity />
 
         <InfrastructureOperations />
 
