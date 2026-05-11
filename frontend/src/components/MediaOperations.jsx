@@ -3,6 +3,13 @@ import axios from "axios";
 
 const API_BASE = `http://${window.location.hostname}:4000/api`;
 const MEDIA_SERVICES = ["Plex", "Jellyfin"];
+const PIPELINE = [
+  "Prowlarr",
+  "Sonarr/Radarr",
+  "qBittorrent",
+  "Tdarr",
+  "Plex/Jellyfin"
+];
 
 function Metric({ title, value, label, danger }) {
   return (
@@ -21,6 +28,26 @@ function serviceStatus(service) {
 function latencyLabel(service) {
   if (!service) return "Not configured";
   return service.latency ? `${service.latency} ms` : "No response";
+}
+
+function speedLabel(bytesPerSecond) {
+  if (!bytesPerSecond) return "0 B/s";
+
+  const units = ["B/s", "KB/s", "MB/s", "GB/s"];
+  let value = bytesPerSecond;
+  let unitIndex = 0;
+
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex += 1;
+  }
+
+  return `${value.toFixed(unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
+}
+
+function connectionState(data) {
+  if (!data) return "unavailable";
+  return data.connected === false ? "offline" : "online";
 }
 
 function MediaOperations({ services }) {
@@ -68,6 +95,17 @@ function MediaOperations({ services }) {
 
   const queueDepth = (media?.sonarr?.queueCount || 0) + (media?.radarr?.queueCount || 0);
   const missingCount = (media?.sonarr?.missingCount || 0) + (media?.radarr?.missingCount || 0);
+  const pipelineStatus = {
+    Prowlarr: connectionState(prowlarr),
+    "Sonarr/Radarr": media?.sonarr?.connected === false || media?.radarr?.connected === false
+      ? "offline"
+      : media ? "online" : "unavailable",
+    qBittorrent: connectionState(qbit),
+    Tdarr: connectionState(tdarr),
+    "Plex/Jellyfin": mediaServiceCards.every(item => serviceStatus(item.service) === "online")
+      ? "online"
+      : "offline"
+  };
 
   return (
     <section id="media" className="section">
@@ -85,56 +123,66 @@ function MediaOperations({ services }) {
         <Metric title="Warnings" value={warnings} label="Pipeline watch items" danger={warnings > 0} />
       </div>
 
+      <div className="pipeline-strip" aria-label="Media pipeline status">
+        {PIPELINE.map((stage, index) => (
+          <div className={`pipeline-step ${pipelineStatus[stage]}`} key={stage}>
+            <span className="pipeline-index">{index + 1}</span>
+            <strong>{stage}</strong>
+            <span>{pipelineStatus[stage]}</span>
+          </div>
+        ))}
+      </div>
+
       <div className="cards">
-        <div className={`service-card ${media?.sonarr?.connected === false ? "is-offline" : ""}`}>
+        <div className={`service-card ${connectionState(media?.sonarr) !== "online" ? "is-offline" : ""}`}>
           <div className="card-top">
             <div>
               <h3>Sonarr</h3>
-              <p>{media?.sonarr?.connected === false ? "API unavailable" : `${media?.sonarr?.missingCount || 0} missing episodes`}</p>
+              <p>{connectionState(media?.sonarr) !== "online" ? "API unavailable" : `${media?.sonarr?.missingCount || 0} missing episodes`}</p>
             </div>
-            <div className={`status-dot ${media?.sonarr?.connected === false ? "offline" : "online"}`} />
+            <div className={`status-dot ${connectionState(media?.sonarr) === "online" ? "online" : "offline"}`} />
           </div>
           <div className="card-bottom">
-            <span className={media?.sonarr?.connected === false ? "bad" : "ok"}>{media?.sonarr?.connected === false ? "offline" : "online"}</span>
-            <span>{media?.sonarr?.queueCount || 0} queued</span>
+            <span className={connectionState(media?.sonarr) === "online" ? "ok" : "bad"}>{connectionState(media?.sonarr)}</span>
+            <span>{media?.sonarr?.queueCount || 0} queued / {media?.sonarr?.healthWarnings || 0} warnings</span>
           </div>
         </div>
 
-        <div className={`service-card ${media?.radarr?.connected === false ? "is-offline" : ""}`}>
+        <div className={`service-card ${connectionState(media?.radarr) !== "online" ? "is-offline" : ""}`}>
           <div className="card-top">
             <div>
               <h3>Radarr</h3>
-              <p>{media?.radarr?.connected === false ? "API unavailable" : `${media?.radarr?.missingCount || 0} missing movies`}</p>
+              <p>{connectionState(media?.radarr) !== "online" ? "API unavailable" : `${media?.radarr?.missingCount || 0} missing movies`}</p>
             </div>
-            <div className={`status-dot ${media?.radarr?.connected === false ? "offline" : "online"}`} />
+            <div className={`status-dot ${connectionState(media?.radarr) === "online" ? "online" : "offline"}`} />
           </div>
           <div className="card-bottom">
-            <span className={media?.radarr?.connected === false ? "bad" : "ok"}>{media?.radarr?.connected === false ? "offline" : "online"}</span>
-            <span>{media?.radarr?.queueCount || 0} queued</span>
+            <span className={connectionState(media?.radarr) === "online" ? "ok" : "bad"}>{connectionState(media?.radarr)}</span>
+            <span>{media?.radarr?.queueCount || 0} queued / {media?.radarr?.healthWarnings || 0} warnings</span>
           </div>
         </div>
 
-        <div className={`service-card ${qbit?.connected === false ? "is-offline" : ""}`}>
+        <div className={`service-card ${connectionState(qbit) !== "online" ? "is-offline" : ""}`}>
           <div className="card-top">
             <div>
               <h3>qBittorrent</h3>
-              <p>{qbit?.connected === false ? qbit?.error || "Downloader unavailable" : `${qbit?.counts?.downloading || 0} downloading, ${qbit?.counts?.uploading || 0} uploading`}</p>
+              <p>{connectionState(qbit) !== "online" ? qbit?.error || "Downloader unavailable" : `${speedLabel(qbit?.speeds?.download)} down, ${speedLabel(qbit?.speeds?.upload)} up`}</p>
             </div>
-            <div className={`status-dot ${qbit?.connected === false ? "offline" : "online"}`} />
+            <div className={`status-dot ${connectionState(qbit) === "online" ? "online" : "offline"}`} />
           </div>
           <div className="card-bottom">
             <span className={(qbit?.counts?.errored || 0) > 0 ? "bad" : "ok"}>{qbit?.counts?.errored || 0} errors</span>
-            <span>{qbit?.counts?.stalled || 0} stalled</span>
+            <span>{qbit?.counts?.stalled || 0} stalled / {qbit?.counts?.uploading || 0} seeding</span>
           </div>
         </div>
 
-        <div className={`service-card ${prowlarr?.connected === false ? "is-offline" : ""}`}>
+        <div className={`service-card ${connectionState(prowlarr) !== "online" ? "is-offline" : ""}`}>
           <div className="card-top">
             <div>
               <h3>Prowlarr</h3>
-              <p>{prowlarr?.connected === false ? prowlarr?.error || "Indexer API unavailable" : `${prowlarr?.counts?.enabledIndexers || 0} enabled indexers`}</p>
+              <p>{connectionState(prowlarr) !== "online" ? prowlarr?.error || "Indexer API unavailable" : `${prowlarr?.counts?.enabledIndexers || 0} enabled indexers`}</p>
             </div>
-            <div className={`status-dot ${prowlarr?.connected === false ? "offline" : "online"}`} />
+            <div className={`status-dot ${connectionState(prowlarr) === "online" ? "online" : "offline"}`} />
           </div>
           <div className="card-bottom">
             <span className={(prowlarr?.counts?.healthWarnings || 0) > 0 ? "bad" : "ok"}>{prowlarr?.counts?.healthWarnings || 0} warnings</span>
@@ -142,13 +190,13 @@ function MediaOperations({ services }) {
           </div>
         </div>
 
-        <div className={`service-card ${tdarr?.connected === false ? "is-offline" : ""}`}>
+        <div className={`service-card ${connectionState(tdarr) !== "online" ? "is-offline" : ""}`}>
           <div className="card-top">
             <div>
               <h3>Tdarr</h3>
-              <p>{tdarr?.connected ? `Version ${tdarr.server?.version || "unknown"}` : tdarr?.error || "Transcode API unavailable"}</p>
+              <p>{connectionState(tdarr) === "online" ? `Version ${tdarr.server?.version || "unknown"}` : tdarr?.error || "Transcode API unavailable"}</p>
             </div>
-            <div className={`status-dot ${tdarr?.connected ? "online" : "offline"}`} />
+            <div className={`status-dot ${connectionState(tdarr) === "online" ? "online" : "offline"}`} />
           </div>
           <div className="card-bottom">
             <span className={(tdarr?.warnings?.length || 0) > 0 ? "bad" : "ok"}>{tdarr?.warnings?.length || 0} warnings</span>

@@ -21,7 +21,7 @@ const BASE_NAV_ITEMS = [
   { id: "quicklaunch", label: "Quick Launch", short: "QL" },
   { id: "proxmox", label: "Proxmox", short: "PX" },
   { id: "unraid", label: "Unraid", short: "UR" },
-  { id: "media", label: "Media", short: "MD" },
+  { id: "media", label: "Media Ops", short: "MO" },
   { id: "tdarr", label: "Tdarr", short: "TD" },
   { id: "gpu", label: "GPU", short: "GP" },
   { id: "settings", label: "Settings", short: "ST" },
