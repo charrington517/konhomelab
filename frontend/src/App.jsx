@@ -10,6 +10,7 @@ import AiStackOverview from "./components/AiStackOverview";
 import InfrastructureOperations from "./components/InfrastructureOperations";
 import MediaOperations from "./components/MediaOperations";
 import StorageOperations from "./components/StorageOperations";
+import NetworkOperations from "./components/NetworkOperations";
 
 const API_URL = window.location.hostname === "localhost"
   ? "http://localhost:4000/api/services"
@@ -24,6 +25,7 @@ const BASE_NAV_ITEMS = [
   { id: "unraid", label: "Unraid", short: "UR" },
   { id: "media", label: "Media Ops", short: "MO" },
   { id: "storage", label: "Storage Ops", short: "SO" },
+  { id: "network", label: "Network Ops", short: "NO" },
   { id: "tdarr", label: "Tdarr", short: "TD" },
   { id: "gpu", label: "GPU", short: "GP" },
   { id: "settings", label: "Settings", short: "ST" },
@@ -181,6 +183,8 @@ function App() {
         <MediaOperations services={services} />
 
         <StorageOperations services={services} />
+
+        <NetworkOperations services={services} />
 
         <SettingsPanel />
 

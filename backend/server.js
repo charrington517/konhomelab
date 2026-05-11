@@ -772,6 +772,51 @@ app.get("/api/gpu/summary", async (req, res) => {
   }
 });
 
+app.get("/api/network/summary", async (req, res) => {
+  async function checkTarget(name, url) {
+    const start = Date.now();
+
+    try {
+      const response = await axios.get(url, {
+        timeout: 5000,
+        httpsAgent,
+        validateStatus: () => true
+      });
+
+      return {
+        name,
+        url,
+        reachable: response.status >= 200 && response.status < 500,
+        status: response.status,
+        latency: Date.now() - start
+      };
+    } catch (err) {
+      return {
+        name,
+        url,
+        reachable: false,
+        status: null,
+        latency: null,
+        error: err.message
+      };
+    }
+  }
+
+  const [wan, cloudflareTunnel] = await Promise.all([
+    checkTarget("WAN", "https://1.1.1.1/cdn-cgi/trace"),
+    checkTarget("Cloudflare Tunnel", "https://command.konhomelab.com")
+  ]);
+
+  res.json({
+    enabled: true,
+    wan,
+    cloudflareTunnel,
+    warnings: [wan, cloudflareTunnel]
+      .filter(target => !target.reachable)
+      .map(target => `${target.name} unreachable`)
+  });
+});
+
 app.get('/api/config', (req, res) => {
   try {
     const config = loadConfig();
