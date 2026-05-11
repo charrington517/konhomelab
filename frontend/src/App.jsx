@@ -8,6 +8,7 @@ import GpuTelemetry from "./components/GpuTelemetry";
 import GlobalFilterBar from "./components/GlobalFilterBar";
 import HeaderSummaryBar from "./components/HeaderSummaryBar";
 import PinnedServices from "./components/PinnedServices";
+import ViewModeSelector from "./components/ViewModeSelector";
 import SystemHealthOverview from "./components/SystemHealthOverview";
 import RecentActivity from "./components/RecentActivity";
 import AiStackOverview from "./components/AiStackOverview";
@@ -157,6 +158,8 @@ function App() {
         </header>
 
         <HeaderSummaryBar services={services} lastUpdated={lastUpdated} />
+
+        <ViewModeSelector />
 
         <GlobalFilterBar
           filters={filters}

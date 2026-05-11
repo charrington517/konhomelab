@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import CollapsibleSection from "./CollapsibleSection";
 
 function formatMemory(gpu) {
   if (gpu.memoryUsedMB === null || gpu.memoryTotalMB === null) {
@@ -46,14 +47,13 @@ function GpuTelemetry({ summary: providedSummary }) {
   }
 
   return (
-    <section id="gpu" className="section">
-      <div className="section-header">
-        <div>
-          <h2>GPU Telemetry</h2>
-          <span>Read-only accelerator status across configured sources</span>
-        </div>
-      </div>
-
+    <CollapsibleSection
+      id="gpu"
+      sectionKey="gpu-telemetry"
+      title="GPU Telemetry"
+      subtitle="Read-only accelerator status across configured sources"
+      meta={`${availableSources.length} sources`}
+    >
       <div className="cards">
         {availableSources.flatMap(([sourceKey, source]) => (
           source.gpus.map(gpu => (
@@ -80,7 +80,7 @@ function GpuTelemetry({ summary: providedSummary }) {
           ))
         ))}
       </div>
-    </section>
+    </CollapsibleSection>
   );
 }
 

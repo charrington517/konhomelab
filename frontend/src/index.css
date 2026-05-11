@@ -298,6 +298,64 @@ a {
   color: var(--text-main);
 }
 
+.view-mode-bar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  margin: -4px 0 12px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.76);
+  border: 1px solid var(--panel-border);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.16);
+}
+
+.view-mode-bar > div:first-child {
+  display: grid;
+  gap: 2px;
+  min-width: 140px;
+}
+
+.view-mode-bar span {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.view-mode-bar strong {
+  color: var(--text-main);
+  font-size: 13px;
+}
+
+.view-mode-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.view-mode-actions button {
+  min-height: 28px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(15, 23, 42, 0.72);
+  color: var(--text-soft);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.view-mode-actions button.active {
+  color: #eff6ff;
+  border-color: rgba(96, 165, 250, 0.42);
+  background: rgba(37, 99, 235, 0.3);
+}
+
+.view-mode-save {
+  justify-self: end;
+  white-space: nowrap;
+}
+
 .filter-bar {
   display: grid;
   grid-template-columns: minmax(220px, 1.2fr) auto auto auto;
@@ -1112,6 +1170,14 @@ a {
 
   .summary-items {
     justify-content: flex-start;
+  }
+
+  .view-mode-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .view-mode-save {
+    justify-self: start;
   }
 
   .filter-bar {

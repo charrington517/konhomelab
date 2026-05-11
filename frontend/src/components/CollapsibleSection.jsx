@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 
 const STORAGE_PREFIX = "konhomelab:section:";
+export const SECTION_STORAGE_PREFIX = STORAGE_PREFIX;
+export const SECTION_LAYOUT_EVENT = "konhomelab:section-layout";
 
 function readCollapsed(sectionKey) {
   try {
@@ -26,6 +28,17 @@ function CollapsibleSection({ id, sectionKey, className = "", title, subtitle, m
 
   useEffect(() => {
     setCollapsed(readCollapsed(key));
+  }, [key]);
+
+  useEffect(() => {
+    function syncLayout(event) {
+      if (!event.detail || !event.detail.key || event.detail.key === key) {
+        setCollapsed(readCollapsed(key));
+      }
+    }
+
+    window.addEventListener(SECTION_LAYOUT_EVENT, syncLayout);
+    return () => window.removeEventListener(SECTION_LAYOUT_EVENT, syncLayout);
   }, [key]);
 
   function toggleCollapsed() {
