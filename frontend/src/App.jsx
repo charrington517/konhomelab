@@ -9,6 +9,7 @@ import SystemHealthOverview from "./components/SystemHealthOverview";
 import AiStackOverview from "./components/AiStackOverview";
 import InfrastructureOperations from "./components/InfrastructureOperations";
 import MediaOperations from "./components/MediaOperations";
+import StorageOperations from "./components/StorageOperations";
 
 const API_URL = window.location.hostname === "localhost"
   ? "http://localhost:4000/api/services"
@@ -22,6 +23,7 @@ const BASE_NAV_ITEMS = [
   { id: "proxmox", label: "Proxmox", short: "PX" },
   { id: "unraid", label: "Unraid", short: "UR" },
   { id: "media", label: "Media Ops", short: "MO" },
+  { id: "storage", label: "Storage Ops", short: "SO" },
   { id: "tdarr", label: "Tdarr", short: "TD" },
   { id: "gpu", label: "GPU", short: "GP" },
   { id: "settings", label: "Settings", short: "ST" },
@@ -89,7 +91,6 @@ function App() {
     return {
       Infrastructure: services.filter(s => s.category === "Infrastructure"),
       Business: services.filter(s => s.category === "Business"),
-      Storage: services.filter(s => s.category === "Storage"),
       Monitoring: services.filter(s => s.category === "Monitoring")
     };
   }, [services]);
@@ -178,6 +179,8 @@ function App() {
         <AiStackOverview services={services} />
 
         <MediaOperations services={services} />
+
+        <StorageOperations services={services} />
 
         <SettingsPanel />
 
