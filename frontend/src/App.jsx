@@ -8,6 +8,7 @@ import GpuTelemetry from "./components/GpuTelemetry";
 import SystemHealthOverview from "./components/SystemHealthOverview";
 import AiStackOverview from "./components/AiStackOverview";
 import InfrastructureOperations from "./components/InfrastructureOperations";
+import MediaOperations from "./components/MediaOperations";
 
 const API_URL = window.location.hostname === "localhost"
   ? "http://localhost:4000/api/services"
@@ -87,7 +88,6 @@ function App() {
   const groups = useMemo(() => {
     return {
       Infrastructure: services.filter(s => s.category === "Infrastructure"),
-      Media: services.filter(s => s.category === "Media"),
       Business: services.filter(s => s.category === "Business"),
       Storage: services.filter(s => s.category === "Storage"),
       Monitoring: services.filter(s => s.category === "Monitoring")
@@ -176,6 +176,8 @@ function App() {
         <GpuTelemetry summary={gpuSummary} />
 
         <AiStackOverview services={services} />
+
+        <MediaOperations services={services} />
 
         <SettingsPanel />
 
