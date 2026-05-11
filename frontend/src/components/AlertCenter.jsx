@@ -220,7 +220,7 @@ export default function AlertCenter() {
           <strong>{criticalCount}</strong>
           <p>Immediate attention</p>
         </div>
-        <div className={`metric ${warningCount > 0 ? "danger" : ""}`}>
+        <div className={`metric ${warningCount > 0 ? "warning" : ""}`}>
           <span>Warnings</span>
           <strong>{warningCount}</strong>
           <p>Needs review</p>
@@ -250,19 +250,19 @@ export default function AlertCenter() {
       ) : (
         <div className="cards">
           {alerts.map((alert, index) => (
-            <div className="service-card" key={`${alert.source}-${alert.title}-${index}`}>
+            <div className={`service-card alert-card alert-${alert.level}`} key={`${alert.source}-${alert.title}-${index}`}>
               <div className="card-top">
                 <div>
                   <h3>{alert.title}</h3>
                   <p>{alert.source}</p>
                 </div>
-                <div className={`status-dot ${alert.level === "critical" ? "offline" : ""}`} />
+                <div className={`status-dot ${alert.level === "critical" ? "offline" : "warning"}`} />
               </div>
-              <p style={{ color: "#94a3b8", marginTop: "22px", lineHeight: 1.5 }}>
+              <p className="alert-detail">
                 {alert.detail}
               </p>
               <div className="card-bottom">
-                <span className={alert.level === "critical" ? "bad" : "ok"}>
+                <span className={alert.level === "critical" ? "bad" : "warn"}>
                   {alert.level}
                 </span>
                 <span>Alert</span>

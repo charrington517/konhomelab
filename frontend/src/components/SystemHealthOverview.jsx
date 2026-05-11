@@ -3,9 +3,9 @@ import axios from "axios";
 
 const API_BASE = `http://${window.location.hostname}:4000/api`;
 
-function Metric({ title, value, label, danger }) {
+function Metric({ title, value, label, danger, tone }) {
   return (
-    <div className={`metric ${danger ? "danger" : ""}`}>
+    <div className={`metric ${tone || ""} ${danger ? "danger" : ""}`}>
       <span>{title}</span>
       <strong>{value}</strong>
       <p>{label}</p>
@@ -109,7 +109,7 @@ function SystemHealthOverview() {
 
       <div className="status-grid">
         <Metric title="Healthy" value={counts.healthy} label="No action needed" />
-        <Metric title="Warnings" value={counts.warning} label="Watch list" danger={counts.warning > 0} />
+        <Metric title="Warnings" value={counts.warning} label="Watch list" tone={counts.warning > 0 ? "warning" : ""} />
         <Metric title="Critical" value={counts.critical} label="Needs attention" danger={counts.critical > 0} />
         <Metric title="Unavailable" value={counts.unavailable} label="Offline or disabled" danger={counts.unavailable > 0} />
       </div>
@@ -117,7 +117,7 @@ function SystemHealthOverview() {
       <div className="health-strip">
         {systems.map(system => (
           <div className={`health-pill ${system.status}`} key={system.name}>
-            <span className={`legend-dot ${system.status === "healthy" ? "online" : "offline"}`}></span>
+            <span className={`legend-dot ${system.status}`}></span>
             <strong>{system.name}</strong>
             <span>{system.status}</span>
           </div>
