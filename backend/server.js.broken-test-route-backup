@@ -568,6 +568,130 @@ app.post('/api/config', (req, res) => {
   }
 });
 
+app.post('/api/test-service', async (req, res) => {
+  try {
+    const { type } = req.body;
+    const config = loadConfig();
+    let result = { ok: false, message: 'Unknown service type' };
+
+    switch (type) {
+      case 'proxmox':
+        if (config.proxmox?.enabled) {
+          try {
+            const response = await axios.get(`${config.tdarr.url}/api/v2/status`, {
+              headers: { 'Authorization':  },
+              httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+              timeout: 5000
+            });
+            result = { ok: true, message:  };
+          } catch (err) {
+            result = { ok: false, message: `Tdarr connection failed: ${err.message}` };
+          }
+        } else {
+          result = { ok: false, message: 'Proxmox not enabled' };
+        }
+        break;
+
+      case 'unraid':
+        if (config.unraid?.enabled) {
+          try {
+            const response = await axios.get(`${config.tdarr.url}/api/v2/status`, {
+              headers: { 'Authorization':  },
+              timeout: 5000
+            });
+            result = { ok: true, message:  };
+          } catch (err) {
+            result = { ok: false, message: `Tdarr connection failed: ${err.message}` };
+          }
+        } else {
+          result = { ok: false, message: 'Unraid not enabled' };
+        }
+        break;
+
+      case 'sonarr':
+        if (config.media?.sonarr?.enabled) {
+          try {
+            const response = await axios.get(`${config.tdarr.url}/api/v2/status`, {
+              headers: { 'X-Api-Key': config.media.sonarr.apiKey },
+              timeout: 5000
+            });
+            result = { ok: true, message:  };
+          } catch (err) {
+            result = { ok: false, message: `Tdarr connection failed: ${err.message}` };
+          }
+        } else {
+          result = { ok: false, message: 'Sonarr not enabled' };
+        }
+        break;
+
+      case 'radarr':
+        if (config.media?.radarr?.enabled) {
+          try {
+            const response = await axios.get(`${config.tdarr.url}/api/v2/status`, {
+              headers: { 'X-Api-Key': config.media.radarr.apiKey },
+              timeout: 5000
+            });
+            result = { ok: true, message:  };
+          } catch (err) {
+            result = { ok: false, message: `Tdarr connection failed: ${err.message}` };
+          }
+        } else {
+          result = { ok: false, message: 'Radarr not enabled' };
+        }
+        break;
+
+      case 'qbittorrent':
+        if (config.qbittorrent?.enabled) {
+          try {
+            const response = await axios.get(`${config.tdarr.url}/api/v2/status`, {
+              timeout: 5000
+            });
+            result = { ok: true, message:  };
+          } catch (err) {
+            result = { ok: false, message: `Tdarr connection failed: ${err.message}` };
+          }
+        } else {
+          result = { ok: false, message: 'qBittorrent not enabled' };
+        }
+        break;
+
+      case 'prowlarr':
+        if (config.prowlarr?.enabled) {
+          try {
+            const response = await axios.get(`${config.tdarr.url}/api/v2/status`, {
+              headers: { 'X-Api-Key': config.prowlarr.apiKey },
+              timeout: 5000
+            });
+            result = { ok: true, message:  };
+          } catch (err) {
+            result = { ok: false, message: `Tdarr connection failed: ${err.message}` };
+          }
+        } else {
+          result = { ok: false, message: 'Prowlarr not enabled' };
+        }
+        break;
+
+      case 'tdarr':
+        if (config.tdarr?.enabled) {
+          try {
+            const response = await axios.get(`${config.tdarr.url}/api/v2/status`, {
+              timeout: 5000
+            });
+            result = { ok: true, message: 'Connected to Tdarr server' };
+          } catch (err) {
+            result = { ok: false, message: `Tdarr connection failed: ${err.message}` };
+          }
+        } else {
+          result = { ok: false, message: 'Tdarr not enabled' };
+        }
+        break;
+    }
+
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ ok: false, message: err.message });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`KonHomeLab backend running on port ${PORT}`);
