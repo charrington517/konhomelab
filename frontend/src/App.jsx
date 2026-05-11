@@ -5,6 +5,7 @@ import TdarrPanel from "./components/TdarrPanel";
 import QuickLaunch from "./components/QuickLaunch";
 import SettingsPanel from "./components/SettingsPanel";
 import GpuTelemetry from "./components/GpuTelemetry";
+import HeaderSummaryBar from "./components/HeaderSummaryBar";
 import SystemHealthOverview from "./components/SystemHealthOverview";
 import RecentActivity from "./components/RecentActivity";
 import AiStackOverview from "./components/AiStackOverview";
@@ -148,6 +149,8 @@ function App() {
             <strong>{lastUpdated || "Starting..."}</strong>
           </div>
         </header>
+
+        <HeaderSummaryBar services={services} lastUpdated={lastUpdated} />
 
         <section id="overview" className="status-grid">
           <Metric title="Services Online" value={online} label="Healthy endpoints" />
