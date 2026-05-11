@@ -6,6 +6,7 @@ import QuickLaunch from "./components/QuickLaunch";
 import SettingsPanel from "./components/SettingsPanel";
 import GpuTelemetry from "./components/GpuTelemetry";
 import SystemHealthOverview from "./components/SystemHealthOverview";
+import AiStackOverview from "./components/AiStackOverview";
 
 const API_URL = window.location.hostname === "localhost"
   ? "http://localhost:4000/api/services"
@@ -85,7 +86,6 @@ function App() {
     return {
       Infrastructure: services.filter(s => s.category === "Infrastructure"),
       Media: services.filter(s => s.category === "Media"),
-      AI: services.filter(s => s.category === "AI"),
       Business: services.filter(s => s.category === "Business"),
       Storage: services.filter(s => s.category === "Storage"),
       Monitoring: services.filter(s => s.category === "Monitoring")
@@ -170,6 +170,8 @@ function App() {
         <QuickLaunch />
 
         <GpuTelemetry summary={gpuSummary} />
+
+        <AiStackOverview services={services} />
 
         <SettingsPanel />
 
