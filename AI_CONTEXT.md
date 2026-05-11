@@ -1,34 +1,78 @@
 # KonHomeLab AI Context
 
-This file is the working memory for AI-assisted development in this repo. Keep it current when architecture, safety rules, or deployment steps change.
+This file is persistent engineering memory for AI-assisted development in this repo. Keep it concise and current. It should contain architecture, stable components, known failures, coding standards, deployment process, current goals, limitations, what already broke, and what is safe.
+
+Do not use this file for raw chat logs, secrets, temporary troubleshooting spam, or emotional/contextual discussion that does not affect engineering decisions.
 
 ## Project Overview
 
-KonHomeLab is a self-hosted dashboard running in LXC container `291` on the Proxmox host `192.168.0.50`.
+KonHomeLab is a React/Vite homelab dashboard running in Docker inside Proxmox LXC container `291`.
 
-- Project root: `/opt/konhomelab`
-- Frontend: `/opt/konhomelab/frontend` React dashboard
-- Backend: `/opt/konhomelab/backend` Express API server
-- Config: `/opt/konhomelab/config/services.json`
-- Orchestration: `/opt/konhomelab/docker-compose.yml`
-- Local dashboard URL: `http://192.168.0.101:3000`
+- Proxmox host: `192.168.0.50`
+- LXC container: `291`
+- Project path: `/opt/konhomelab`
+- Primary dashboard URL: `http://192.168.0.101:3000`
 - Cloudflare tunnel URL: `https://command.konhomelab.com`
+
+Frontend:
+
+- React
+- Vite
+- Nginx container
+- Project path: `/opt/konhomelab/frontend`
+
+Backend:
+
+- Node.js API
+- Express server
+- Docker container
+- Project path: `/opt/konhomelab/backend`
+
+Config and orchestration:
+
+- Config: `/opt/konhomelab/config/services.json`
+- Docker Compose: `/opt/konhomelab/docker-compose.yml`
 
 ## Current Stable State
 
-The dashboard is stable with:
+Working:
 
+- Alert Center
+- Quick Launch
+- SettingsPanel
 - Sidebar navigation
-- Settings panel
-- Alert center
-- Quick Launch service grid
+- Proxmox status
+- Tdarr status
+- Connection testing
+- JSON config editor
 - Proxmox, Unraid, and media stack integration
 - Cross-system monitoring
-- JSON config editor and connection testing
+
+Rolled back:
+
+- SettingsForms
+- ServiceLinkManager
+
+Reason:
+
+- Runtime import failures caused a React blank screen.
+
+## Critical Lessons Learned
+
+- Build success does not guarantee runtime success.
+- Runtime imports have repeatedly failed.
+- Known failure examples:
+  - `SettingsForms is not defined`
+  - `ServiceLinkManager is not defined`
+- JSX generated through shell heredocs caused broken syntax.
+- Known generated-JSX failures:
+  - Missing quotes
+  - Malformed JSX attributes
+- The safest strategy is single-file edits, small changes only, and runtime validation after every build.
 
 ## Critical Rules
 
-- Always inspect `git status` before editing.
+- Always inspect `git status --short` before editing.
 - Create a checkpoint commit before any code changes.
 - Do not touch backend files unless the task specifically requires it.
 - Do not add imports without verifying the referenced file/package exists.
@@ -39,7 +83,7 @@ The dashboard is stable with:
 
 ## Required Safe Workflow
 
-Before any code changes:
+Before any code change:
 
 1. Run `git status --short`.
 2. Create a checkpoint commit:
@@ -49,28 +93,34 @@ git add .
 git commit -m "Checkpoint before <task>"
 ```
 
-For each change:
+After any frontend change:
 
-1. Make one isolated change only.
-2. Run the frontend build:
+1. Run the frontend build:
 
 ```bash
 docker compose build frontend
 ```
 
-3. If the build succeeds, deploy the frontend:
+2. If the build succeeds, deploy the frontend:
 
 ```bash
 docker compose up -d frontend
 ```
 
-4. Verify in the browser:
+3. Verify in the browser:
 
 - No blank screen
 - No console errors
 - The feature works
 
-5. Only then commit the final change.
+4. Only then commit the final change.
+
+Rollback immediately on:
+
+- Blank screen
+- Console `ReferenceError`
+- Runtime import failure
+- Broken navigation or settings access
 
 ## Forbidden Actions
 
@@ -80,32 +130,57 @@ docker compose up -d frontend
 - No claiming success before runtime verification.
 - No modifying backend during frontend-only tasks.
 
-## Preferred Method
+## Preferred Editing Strategy
 
-- Edit existing files when possible.
+Good:
+
+- Edit existing JSX.
+- Make inline modifications.
+- Prefer CSS polish.
+- Prefer sidebar tweaks.
 - Keep diffs small.
 - Work on one feature at a time.
-- Roll back immediately on runtime error.
 
-## Known Risk Areas
+Bad:
 
-- Runtime-only React failures after a successful build
-- Missing or incorrect imports
-- Component integration across multiple files
-- Settings/config editor changes
-- Docker rebuild/deploy steps that mask stale frontend assets
+- New component integrations without a clear validation path.
+- Multi-file refactors.
+- Shell-generated JSX.
+- Runtime imports that are not verified first.
 
 ## Safe Frontend Workflow
 
 1. Run `git status --short`.
 2. Create a checkpoint commit before edits.
 3. Review the relevant files before editing.
-4. Make the smallest useful change.
+4. Make one isolated change only.
 5. Run `docker compose build frontend`.
 6. If the build passes, run `docker compose up -d frontend`.
 7. Check container status.
 8. Verify the dashboard loads, has no console errors, and the feature works.
 9. Commit only after validation succeeds.
+
+## Current Development Goals
+
+Near-term:
+
+- Sidebar polish
+- Active nav highlighting
+- Sticky nav
+- Collapsible mobile nav
+- Section icons
+- Visual improvements
+- Safer UX improvements
+
+Long-term:
+
+- AI orchestration
+- Infrastructure monitoring
+- Docker controls
+- GPU telemetry
+- Automation integration
+- Cloudflare remote access
+- AI agent operations center
 
 ## Common Commands
 
@@ -127,10 +202,16 @@ View containers:
 docker compose ps
 ```
 
-Rebuild frontend:
+Build frontend:
 
 ```bash
-docker compose up -d --build frontend
+docker compose build frontend
+```
+
+Deploy frontend:
+
+```bash
+docker compose up -d frontend
 ```
 
 Check recent commits:
