@@ -1,19 +1,21 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { DEFAULT_FILTERS, filterItems, hasActiveFilters } from "../filterUtils";
 
-export default function QuickLaunch() {
-  const [services, setServices] = useState([]);
+export default function QuickLaunch({ services: providedServices, filters }) {
+  const [loadedServices, setLoadedServices] = useState([]);
 
   useEffect(() => {
+    if (providedServices) return;
     fetchServices();
-  }, []);
+  }, [providedServices]);
 
   async function fetchServices() {
     try {
       const res = await axios.get(`http://${window.location.hostname}:4000/api/services`);
-      setServices(res.data);
+      setLoadedServices(res.data);
     } catch {
-      setServices([]);
+      setLoadedServices([]);
     }
   }
 
@@ -31,7 +33,11 @@ export default function QuickLaunch() {
     'n8n'
   ];
 
-  const sorted = [...services].sort((a, b) => {
+  const services = providedServices || loadedServices;
+  const activeFilters = filters || DEFAULT_FILTERS;
+  const visibleServices = filterItems(services, activeFilters);
+
+  const sorted = [...visibleServices].sort((a, b) => {
     const ai = priorityOrder.indexOf(a.name);
     const bi = priorityOrder.indexOf(b.name);
     if (ai === -1 && bi === -1) return 0;
@@ -55,6 +61,14 @@ export default function QuickLaunch() {
           gap: '18px'
         }}
       >
+        {sorted.length === 0 && (
+          <div className="empty-card">
+            {hasActiveFilters(activeFilters)
+              ? "No quick-launch services match the current filters."
+              : "No quick-launch services available."}
+          </div>
+        )}
+
         {sorted.map((service) => (
           <a
             key={service.name}

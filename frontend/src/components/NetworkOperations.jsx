@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { DEFAULT_FILTERS, filterItems, filteredCountLabel, hasActiveFilters } from "../filterUtils";
 
 const API_BASE = `http://${window.location.hostname}:4000/api`;
 const NETWORK_TERMS = [
@@ -40,7 +41,7 @@ function statusClass(status) {
   return status === "online" || status === true ? "online" : "offline";
 }
 
-function NetworkOperations({ services }) {
+function NetworkOperations({ services, filters = DEFAULT_FILTERS }) {
   const [network, setNetwork] = useState(null);
 
   useEffect(() => {
@@ -64,8 +65,22 @@ function NetworkOperations({ services }) {
   }
 
   const networkServices = useMemo(() => {
-    return services.filter(isNetworkService);
+    return services.filter(isNetworkService).map(service => ({ ...service, category: service.category || "network", text: "network" }));
   }, [services]);
+  const visibleNetworkServices = filterItems(networkServices, filters);
+  const visibleLatencyServices = filterItems(services.map(service => ({
+    ...service,
+    text: "network latency response time"
+  })), filters);
+  const reachabilityTargets = [network?.wan, network?.cloudflareTunnel]
+    .filter(Boolean)
+    .map(target => ({
+      ...target,
+      category: "network",
+      status: target.reachable ? "online" : "offline",
+      text: "wan cloudflare tunnel network"
+    }));
+  const visibleReachabilityTargets = filterItems(reachabilityTargets, filters);
 
   const latencyValues = services
     .map(service => service.latency)
@@ -114,7 +129,7 @@ function NetworkOperations({ services }) {
       </div>
 
       <div className="cards">
-        {[network?.wan, network?.cloudflareTunnel].filter(Boolean).map(target => (
+        {visibleReachabilityTargets.map(target => (
           <div className={`service-card ${target.reachable ? "" : "is-offline"}`} key={target.name}>
             <div className="card-top">
               <div>
@@ -130,11 +145,15 @@ function NetworkOperations({ services }) {
           </div>
         ))}
 
-        {networkServices.length === 0 && (
-          <div className="empty-card">No router, switch, DNS, or network monitoring services configured yet.</div>
+        {visibleReachabilityTargets.length === 0 && visibleNetworkServices.length === 0 && (
+          <div className="empty-card">
+            {hasActiveFilters(filters)
+              ? "No network status cards match the current filters."
+              : "No router, switch, DNS, or network monitoring services configured yet."}
+          </div>
         )}
 
-        {networkServices.map(service => (
+        {visibleNetworkServices.map(service => (
           <a
             className={`service-card ${service.status !== "online" ? "is-offline" : ""}`}
             href={service.url}
@@ -160,12 +179,16 @@ function NetworkOperations({ services }) {
       <div className="section-header compact-header">
         <div>
           <h2>Service Response Times</h2>
-          <span>Existing health-check latency from configured services</span>
+          <span>{filteredCountLabel(services.length, visibleLatencyServices.length)} - Existing health-check latency from configured services</span>
         </div>
       </div>
 
       <div className="health-strip">
-        {services.map(service => (
+        {visibleLatencyServices.length === 0 && (
+          <div className="empty-card">No service response times match the current filters.</div>
+        )}
+
+        {visibleLatencyServices.map(service => (
           <div className={`health-pill ${service.status === "online" ? "healthy" : "critical"}`} key={service.name}>
             <span className={`legend-dot ${statusClass(service.status)}`}></span>
             <strong>{service.name}</strong>

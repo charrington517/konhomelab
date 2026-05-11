@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { DEFAULT_FILTERS, filterItems, filteredCountLabel, hasActiveFilters } from "../filterUtils";
 
 const API_BASE = `http://${window.location.hostname}:4000/api`;
 
@@ -24,7 +25,7 @@ function stateClass(status) {
     : "offline";
 }
 
-function InfrastructureOperations() {
+function InfrastructureOperations({ filters = DEFAULT_FILTERS }) {
   const [proxmox, setProxmox] = useState(null);
   const [unraid, setUnraid] = useState(null);
 
@@ -49,9 +50,17 @@ function InfrastructureOperations() {
   }
 
   const guests = proxmox?.guests || [];
-  const vms = guests.filter(guest => guest.type === "VM");
-  const lxcs = guests.filter(guest => guest.type === "LXC");
-  const containers = unraid?.docker?.containers || [];
+  const enrichedGuests = guests.map(guest => ({ ...guest, category: "infrastructure", text: `${guest.type} proxmox` }));
+  const vms = enrichedGuests.filter(guest => guest.type === "VM");
+  const lxcs = enrichedGuests.filter(guest => guest.type === "LXC");
+  const containers = (unraid?.docker?.containers || []).map(container => ({
+    ...container,
+    category: "infrastructure",
+    status: container.state,
+    text: "unraid docker container"
+  }));
+  const visibleGuests = filterItems(enrichedGuests, filters);
+  const visibleContainers = filterItems(containers, filters);
 
   const counts = useMemo(() => ({
     runningGuests: guests.filter(guest => guest.status === "running").length,
@@ -82,16 +91,18 @@ function InfrastructureOperations() {
       <div className="section-header compact-header">
         <div>
           <h2>Proxmox Guests</h2>
-          <span>VMs and LXCs by node, status, CPU, and memory</span>
+          <span>{filteredCountLabel(enrichedGuests.length, visibleGuests.length)} - VMs and LXCs by node, status, CPU, and memory</span>
         </div>
       </div>
 
       <div className="cards">
-        {guests.length === 0 && (
-          <div className="empty-card">No Proxmox guest data available.</div>
+        {visibleGuests.length === 0 && (
+          <div className="empty-card">
+            {hasActiveFilters(filters) ? "No Proxmox guests match the current filters." : "No Proxmox guest data available."}
+          </div>
         )}
 
-        {guests.map(guest => (
+        {visibleGuests.map(guest => (
           <div className={`service-card ${guest.status !== "running" ? "is-offline" : ""}`} key={`${guest.type}-${guest.id}`}>
             <div className="card-top">
               <div>
@@ -114,15 +125,17 @@ function InfrastructureOperations() {
           <h2>Unraid Docker</h2>
           <span>Container state and image inventory</span>
         </div>
-        <span>{counts.stoppedContainers} warnings</span>
+        <span>{filteredCountLabel(containers.length, visibleContainers.length)} - {counts.stoppedContainers} warnings</span>
       </div>
 
       <div className="cards">
-        {containers.length === 0 && (
-          <div className="empty-card">No Unraid Docker container data available.</div>
+        {visibleContainers.length === 0 && (
+          <div className="empty-card">
+            {hasActiveFilters(filters) ? "No Unraid Docker containers match the current filters." : "No Unraid Docker container data available."}
+          </div>
         )}
 
-        {containers.map(container => (
+        {visibleContainers.map(container => (
           <div className={`service-card ${container.state !== "RUNNING" ? "is-offline" : ""}`} key={container.name}>
             <div className="card-top">
               <div>

@@ -1,3 +1,5 @@
+import { DEFAULT_FILTERS, filterItems, filteredCountLabel, hasActiveFilters } from "../filterUtils";
+
 const AI_TARGETS = [
   "Ollama",
   "OpenWebUI",
@@ -20,15 +22,18 @@ function latencyText(service) {
   return service.latency ? `${service.latency} ms` : "No response";
 }
 
-function AiStackOverview({ services }) {
+function AiStackOverview({ services, filters = DEFAULT_FILTERS }) {
   const aiServices = AI_TARGETS.map(name => {
     const service = findService(services, name);
     return {
       name,
       service,
-      status: statusText(service)
+      status: statusText(service),
+      category: "AI",
+      url: service?.url
     };
   });
+  const visibleAiServices = filterItems(aiServices, filters);
 
   const online = aiServices.filter(item => item.status === "online").length;
   const unavailable = aiServices.length - online;
@@ -40,11 +45,19 @@ function AiStackOverview({ services }) {
           <h2>AI Stack Overview</h2>
           <span>Read-only status for local AI tools and automation services</span>
         </div>
-        <span>{online} online / {unavailable} unavailable</span>
+        <span>{filteredCountLabel(aiServices.length, visibleAiServices.length)} - {online} online / {unavailable} unavailable</span>
       </div>
 
       <div className="cards">
-        {aiServices.map(item => {
+        {visibleAiServices.length === 0 && (
+          <div className="empty-card">
+            {hasActiveFilters(filters)
+              ? "No AI services match the current filters."
+              : "No AI services configured."}
+          </div>
+        )}
+
+        {visibleAiServices.map(item => {
           const service = item.service;
           const onlineStatus = item.status === "online";
 

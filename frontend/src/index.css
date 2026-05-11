@@ -298,6 +298,89 @@ a {
   color: var(--text-main);
 }
 
+.filter-bar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.2fr) auto auto auto;
+  align-items: center;
+  gap: 10px;
+  margin: -4px 0 16px;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.76);
+  border: 1px solid var(--panel-border);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.16);
+}
+
+.filter-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.filter-search span {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.filter-search input {
+  width: 100%;
+  min-height: 32px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(7, 11, 16, 0.72);
+  color: var(--text-main);
+  outline: none;
+}
+
+.filter-search input:focus {
+  border-color: rgba(96, 165, 250, 0.46);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
+}
+
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.filter-group button {
+  min-height: 28px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(15, 23, 42, 0.72);
+  color: var(--text-soft);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.filter-group button.active {
+  color: #eff6ff;
+  border-color: rgba(96, 165, 250, 0.42);
+  background: rgba(37, 99, 235, 0.3);
+}
+
+.filter-count {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 5px;
+  color: var(--text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.filter-count strong {
+  color: var(--text-main);
+  font-size: 16px;
+}
+
 .status-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -881,6 +964,19 @@ a {
   }
 
   .summary-items {
+    justify-content: flex-start;
+  }
+
+  .filter-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-search {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .filter-count {
     justify-content: flex-start;
   }
 

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { DEFAULT_FILTERS, filterItems, filteredCountLabel, hasActiveFilters } from "../filterUtils";
 
 const API_BASE = `http://${window.location.hostname}:4000/api`;
 const STORAGE_SERVICES = ["Immich", "Nextcloud"];
@@ -39,7 +40,7 @@ function diskStatusLabel(status) {
   return String(status || "unknown").replace("DISK_", "").toLowerCase();
 }
 
-function StorageOperations({ services }) {
+function StorageOperations({ services, filters = DEFAULT_FILTERS }) {
   const [unraid, setUnraid] = useState(null);
 
   useEffect(() => {
@@ -57,13 +58,22 @@ function StorageOperations({ services }) {
     }
   }
 
-  const disks = unraid?.array?.disks || [];
-  const parities = unraid?.array?.parities || [];
-  const caches = unraid?.array?.caches || [];
+  const disks = (unraid?.array?.disks || []).map(disk => ({ ...disk, category: "storage", status: disk.status, text: "unraid array disk" }));
+  const parities = (unraid?.array?.parities || []).map(parity => ({ ...parity, category: "storage", status: parity.status, text: "unraid parity disk" }));
+  const caches = (unraid?.array?.caches || []).map(cache => ({ ...cache, category: "storage", status: cache.status, text: "unraid cache pool" }));
   const serviceCards = STORAGE_SERVICES.map(name => ({
     name,
-    service: services.find(service => service.name === name)
+    service: services.find(service => service.name === name),
+    category: "storage"
   }));
+  const visibleParities = filterItems(parities, filters);
+  const visibleDisks = filterItems(disks, filters);
+  const visibleCaches = filterItems(caches, filters);
+  const visibleServiceCards = filterItems(serviceCards.map(item => ({
+    ...item,
+    status: serviceStatus(item.service),
+    url: item.service?.url
+  })), filters);
 
   const counts = useMemo(() => {
     const problemDisks = disks.filter(disk => disk.status !== "DISK_OK").length;
@@ -119,7 +129,11 @@ function StorageOperations({ services }) {
       </div>
 
       <div className="cards">
-        {parities.map(parity => (
+        {visibleParities.length === 0 && visibleServiceCards.length === 0 && hasActiveFilters(filters) && (
+          <div className="empty-card">No storage summary cards match the current filters.</div>
+        )}
+
+        {visibleParities.map(parity => (
           <div className={`service-card ${parity.status !== "DISK_OK" ? "is-offline" : ""}`} key={parity.name}>
             <div className="card-top">
               <div>
@@ -135,7 +149,7 @@ function StorageOperations({ services }) {
           </div>
         ))}
 
-        {serviceCards.map(({ name, service }) => (
+        {visibleServiceCards.map(({ name, service }) => (
           <a
             className={`service-card ${serviceStatus(service) !== "online" ? "is-offline" : ""}`}
             href={service?.url || "#storage"}
@@ -161,16 +175,18 @@ function StorageOperations({ services }) {
       <div className="section-header compact-header">
         <div>
           <h2>Array Disks</h2>
-          <span>Disk status, temperature, and reported size</span>
+          <span>{filteredCountLabel(disks.length, visibleDisks.length)} - Disk status, temperature, and reported size</span>
         </div>
       </div>
 
       <div className="cards">
-        {disks.length === 0 && (
-          <div className="empty-card">No Unraid disk data available.</div>
+        {visibleDisks.length === 0 && (
+          <div className="empty-card">
+            {hasActiveFilters(filters) ? "No array disks match the current filters." : "No Unraid disk data available."}
+          </div>
         )}
 
-        {disks.map(disk => (
+        {visibleDisks.map(disk => (
           <div className={`service-card ${disk.status !== "DISK_OK" ? "is-offline" : ""}`} key={disk.name}>
             <div className="card-top">
               <div>
@@ -190,16 +206,18 @@ function StorageOperations({ services }) {
       <div className="section-header compact-header">
         <div>
           <h2>Cache Pools</h2>
-          <span>Cache pool status and temperatures when available</span>
+          <span>{filteredCountLabel(caches.length, visibleCaches.length)} - Cache pool status and temperatures when available</span>
         </div>
       </div>
 
       <div className="cards">
-        {caches.length === 0 && (
-          <div className="empty-card">No cache pool data available.</div>
+        {visibleCaches.length === 0 && (
+          <div className="empty-card">
+            {hasActiveFilters(filters) ? "No cache pools match the current filters." : "No cache pool data available."}
+          </div>
         )}
 
-        {caches.map(cache => (
+        {visibleCaches.map(cache => (
           <div className={`service-card ${cache.status !== "DISK_OK" ? "is-offline" : ""}`} key={cache.name}>
             <div className="card-top">
               <div>

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { DEFAULT_FILTERS, filterItems, filteredCountLabel, hasActiveFilters } from "../filterUtils";
 
 const API_BASE = `http://${window.location.hostname}:4000/api`;
 const MEDIA_SERVICES = ["Plex", "Jellyfin"];
@@ -50,7 +51,7 @@ function connectionState(data) {
   return data.connected === false ? "offline" : "online";
 }
 
-function MediaOperations({ services }) {
+function MediaOperations({ services, filters = DEFAULT_FILTERS }) {
   const [media, setMedia] = useState(null);
   const [qbit, setQbit] = useState(null);
   const [prowlarr, setProwlarr] = useState(null);
@@ -78,7 +79,8 @@ function MediaOperations({ services }) {
 
   const mediaServiceCards = MEDIA_SERVICES.map(name => ({
     name,
-    service: services.find(service => service.name === name)
+    service: services.find(service => service.name === name),
+    category: "media"
   }));
 
   const warnings = useMemo(() => {
@@ -106,6 +108,63 @@ function MediaOperations({ services }) {
       ? "online"
       : "offline"
   };
+  const operationCards = [
+    {
+      key: "sonarr",
+      name: "Sonarr",
+      category: "media",
+      status: connectionState(media?.sonarr),
+      warning: (media?.sonarr?.healthWarnings || 0) > 0,
+      detail: connectionState(media?.sonarr) !== "online" ? "API unavailable" : `${media?.sonarr?.missingCount || 0} missing episodes`,
+      meta: `${media?.sonarr?.queueCount || 0} queued / ${media?.sonarr?.healthWarnings || 0} warnings`
+    },
+    {
+      key: "radarr",
+      name: "Radarr",
+      category: "media",
+      status: connectionState(media?.radarr),
+      warning: (media?.radarr?.healthWarnings || 0) > 0,
+      detail: connectionState(media?.radarr) !== "online" ? "API unavailable" : `${media?.radarr?.missingCount || 0} missing movies`,
+      meta: `${media?.radarr?.queueCount || 0} queued / ${media?.radarr?.healthWarnings || 0} warnings`
+    },
+    {
+      key: "qbit",
+      name: "qBittorrent",
+      category: "media",
+      status: connectionState(qbit),
+      warning: (qbit?.counts?.stalled || 0) > 0,
+      critical: (qbit?.counts?.errored || 0) > 0,
+      detail: connectionState(qbit) !== "online" ? qbit?.error || "Downloader unavailable" : `${speedLabel(qbit?.speeds?.download)} down, ${speedLabel(qbit?.speeds?.upload)} up`,
+      meta: `${qbit?.counts?.stalled || 0} stalled / ${qbit?.counts?.uploading || 0} seeding`,
+      badge: `${qbit?.counts?.errored || 0} errors`
+    },
+    {
+      key: "prowlarr",
+      name: "Prowlarr",
+      category: "media",
+      status: connectionState(prowlarr),
+      warning: (prowlarr?.counts?.healthWarnings || 0) > 0,
+      detail: connectionState(prowlarr) !== "online" ? prowlarr?.error || "Indexer API unavailable" : `${prowlarr?.counts?.enabledIndexers || 0} enabled indexers`,
+      meta: `${prowlarr?.counts?.indexers || 0} total`,
+      badge: `${prowlarr?.counts?.healthWarnings || 0} warnings`
+    },
+    {
+      key: "tdarr",
+      name: "Tdarr",
+      category: "media",
+      status: connectionState(tdarr),
+      warning: (tdarr?.warnings?.length || 0) > 0,
+      detail: connectionState(tdarr) === "online" ? `Version ${tdarr.server?.version || "unknown"}` : tdarr?.error || "Transcode API unavailable",
+      meta: `${tdarr?.counts?.activeJobs || 0} active`,
+      badge: `${tdarr?.warnings?.length || 0} warnings`
+    }
+  ];
+  const visibleOperationCards = filterItems(operationCards, filters);
+  const visibleMediaServiceCards = filterItems(mediaServiceCards.map(item => ({
+    ...item,
+    status: serviceStatus(item.service),
+    url: item.service?.url
+  })), filters);
 
   return (
     <section id="media" className="section">
@@ -120,7 +179,7 @@ function MediaOperations({ services }) {
         <Metric title="Queue" value={queueDepth} label="Sonarr/Radarr items" danger={queueDepth > 0} />
         <Metric title="Missing" value={missingCount} label="Wanted media backlog" danger={missingCount > 0} />
         <Metric title="Torrents" value={qbit?.counts?.total || 0} label={`${qbit?.counts?.stalled || 0} stalled`} danger={(qbit?.counts?.stalled || 0) > 0} />
-        <Metric title="Warnings" value={warnings} label="Pipeline watch items" danger={warnings > 0} />
+        <Metric title="Warnings" value={warnings} label={filteredCountLabel(operationCards.length + mediaServiceCards.length, visibleOperationCards.length + visibleMediaServiceCards.length)} danger={warnings > 0} />
       </div>
 
       <div className="pipeline-strip" aria-label="Media pipeline status">
@@ -134,77 +193,31 @@ function MediaOperations({ services }) {
       </div>
 
       <div className="cards">
-        <div className={`service-card ${connectionState(media?.sonarr) !== "online" ? "is-offline" : ""}`}>
+        {visibleOperationCards.length === 0 && visibleMediaServiceCards.length === 0 && (
+          <div className="empty-card">
+            {hasActiveFilters(filters) ? "No media operations match the current filters." : "No media operations available."}
+          </div>
+        )}
+
+        {visibleOperationCards.map(card => (
+          <div className={`service-card ${card.status !== "online" ? "is-offline" : ""}`} key={card.key}>
           <div className="card-top">
             <div>
-              <h3>Sonarr</h3>
-              <p>{connectionState(media?.sonarr) !== "online" ? "API unavailable" : `${media?.sonarr?.missingCount || 0} missing episodes`}</p>
+              <h3>{card.name}</h3>
+              <p>{card.detail}</p>
             </div>
-            <div className={`status-dot ${connectionState(media?.sonarr) === "online" ? "online" : "offline"}`} />
+            <div className={`status-dot ${card.status === "online" ? "online" : "offline"}`} />
           </div>
           <div className="card-bottom">
-            <span className={connectionState(media?.sonarr) === "online" ? "ok" : "bad"}>{connectionState(media?.sonarr)}</span>
-            <span>{media?.sonarr?.queueCount || 0} queued / {media?.sonarr?.healthWarnings || 0} warnings</span>
+            <span className={card.critical ? "bad" : card.warning ? "warn" : card.status === "online" ? "ok" : "bad"}>
+              {card.badge || card.status}
+            </span>
+            <span>{card.meta}</span>
           </div>
         </div>
+        ))}
 
-        <div className={`service-card ${connectionState(media?.radarr) !== "online" ? "is-offline" : ""}`}>
-          <div className="card-top">
-            <div>
-              <h3>Radarr</h3>
-              <p>{connectionState(media?.radarr) !== "online" ? "API unavailable" : `${media?.radarr?.missingCount || 0} missing movies`}</p>
-            </div>
-            <div className={`status-dot ${connectionState(media?.radarr) === "online" ? "online" : "offline"}`} />
-          </div>
-          <div className="card-bottom">
-            <span className={connectionState(media?.radarr) === "online" ? "ok" : "bad"}>{connectionState(media?.radarr)}</span>
-            <span>{media?.radarr?.queueCount || 0} queued / {media?.radarr?.healthWarnings || 0} warnings</span>
-          </div>
-        </div>
-
-        <div className={`service-card ${connectionState(qbit) !== "online" ? "is-offline" : ""}`}>
-          <div className="card-top">
-            <div>
-              <h3>qBittorrent</h3>
-              <p>{connectionState(qbit) !== "online" ? qbit?.error || "Downloader unavailable" : `${speedLabel(qbit?.speeds?.download)} down, ${speedLabel(qbit?.speeds?.upload)} up`}</p>
-            </div>
-            <div className={`status-dot ${connectionState(qbit) === "online" ? "online" : "offline"}`} />
-          </div>
-          <div className="card-bottom">
-            <span className={(qbit?.counts?.errored || 0) > 0 ? "bad" : "ok"}>{qbit?.counts?.errored || 0} errors</span>
-            <span>{qbit?.counts?.stalled || 0} stalled / {qbit?.counts?.uploading || 0} seeding</span>
-          </div>
-        </div>
-
-        <div className={`service-card ${connectionState(prowlarr) !== "online" ? "is-offline" : ""}`}>
-          <div className="card-top">
-            <div>
-              <h3>Prowlarr</h3>
-              <p>{connectionState(prowlarr) !== "online" ? prowlarr?.error || "Indexer API unavailable" : `${prowlarr?.counts?.enabledIndexers || 0} enabled indexers`}</p>
-            </div>
-            <div className={`status-dot ${connectionState(prowlarr) === "online" ? "online" : "offline"}`} />
-          </div>
-          <div className="card-bottom">
-            <span className={(prowlarr?.counts?.healthWarnings || 0) > 0 ? "bad" : "ok"}>{prowlarr?.counts?.healthWarnings || 0} warnings</span>
-            <span>{prowlarr?.counts?.indexers || 0} total</span>
-          </div>
-        </div>
-
-        <div className={`service-card ${connectionState(tdarr) !== "online" ? "is-offline" : ""}`}>
-          <div className="card-top">
-            <div>
-              <h3>Tdarr</h3>
-              <p>{connectionState(tdarr) === "online" ? `Version ${tdarr.server?.version || "unknown"}` : tdarr?.error || "Transcode API unavailable"}</p>
-            </div>
-            <div className={`status-dot ${connectionState(tdarr) === "online" ? "online" : "offline"}`} />
-          </div>
-          <div className="card-bottom">
-            <span className={(tdarr?.warnings?.length || 0) > 0 ? "bad" : "ok"}>{tdarr?.warnings?.length || 0} warnings</span>
-            <span>{tdarr?.counts?.activeJobs || 0} active</span>
-          </div>
-        </div>
-
-        {mediaServiceCards.map(({ name, service }) => (
+        {visibleMediaServiceCards.map(({ name, service }) => (
           <a
             className={`service-card ${serviceStatus(service) !== "online" ? "is-offline" : ""}`}
             href={service?.url || "#media"}

@@ -5,6 +5,7 @@ import TdarrPanel from "./components/TdarrPanel";
 import QuickLaunch from "./components/QuickLaunch";
 import SettingsPanel from "./components/SettingsPanel";
 import GpuTelemetry from "./components/GpuTelemetry";
+import GlobalFilterBar from "./components/GlobalFilterBar";
 import HeaderSummaryBar from "./components/HeaderSummaryBar";
 import SystemHealthOverview from "./components/SystemHealthOverview";
 import RecentActivity from "./components/RecentActivity";
@@ -13,6 +14,7 @@ import InfrastructureOperations from "./components/InfrastructureOperations";
 import MediaOperations from "./components/MediaOperations";
 import StorageOperations from "./components/StorageOperations";
 import NetworkOperations from "./components/NetworkOperations";
+import { DEFAULT_FILTERS, filterItems, filteredCountLabel, hasActiveFilters } from "./filterUtils";
 
 const API_URL = window.location.hostname === "localhost"
   ? "http://localhost:4000/api/services"
@@ -42,6 +44,7 @@ function App() {
   const [proxmox, setProxmox] = useState(null);
   const [gpuSummary, setGpuSummary] = useState(null);
   const [activeSection, setActiveSection] = useState("overview");
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
 
   useEffect(() => {
     fetchServices();
@@ -94,14 +97,15 @@ function App() {
 
   const groups = useMemo(() => {
     return {
-      Infrastructure: services.filter(s => s.category === "Infrastructure"),
-      Business: services.filter(s => s.category === "Business"),
-      Monitoring: services.filter(s => s.category === "Monitoring")
+      Infrastructure: filterItems(services.filter(s => s.category === "Infrastructure"), filters),
+      Business: filterItems(services.filter(s => s.category === "Business"), filters),
+      Monitoring: filterItems(services.filter(s => s.category === "Monitoring"), filters)
     };
-  }, [services]);
+  }, [services, filters]);
 
   const online = services.filter(s => s.status === "online").length;
   const offline = services.filter(s => s.status === "offline").length;
+  const filteredServices = useMemo(() => filterItems(services, filters), [services, filters]);
 
   return (
     <div className="app-shell compact-ops">
@@ -152,6 +156,13 @@ function App() {
 
         <HeaderSummaryBar services={services} lastUpdated={lastUpdated} />
 
+        <GlobalFilterBar
+          filters={filters}
+          onChange={setFilters}
+          totalServices={services.length}
+          visibleServices={filteredServices.length}
+        />
+
         <section id="overview" className="status-grid">
           <Metric title="Services Online" value={online} label="Healthy endpoints" />
           <Metric title="Offline" value={offline} label="Needs attention" danger={offline > 0} />
@@ -163,7 +174,7 @@ function App() {
 
         <RecentActivity />
 
-        <InfrastructureOperations />
+        <InfrastructureOperations filters={filters} />
 
         <section className="hero-panel">
           <div>
@@ -181,17 +192,17 @@ function App() {
 
         <AlertCenter />
 
-        <QuickLaunch />
+        <QuickLaunch services={services} filters={filters} />
 
         <GpuTelemetry summary={gpuSummary} />
 
-        <AiStackOverview services={services} />
+        <AiStackOverview services={services} filters={filters} />
 
-        <MediaOperations services={services} />
+        <MediaOperations services={services} filters={filters} />
 
-        <StorageOperations services={services} />
+        <StorageOperations services={services} filters={filters} />
 
-        <NetworkOperations services={services} />
+        <NetworkOperations services={services} filters={filters} />
 
         <SettingsPanel />
 
@@ -213,9 +224,9 @@ function App() {
                   <Metric title="Storage Pools" value={proxmox.storage.length} label="Tracked by Proxmox" />
                 </div>
 
-                <div className="cards">
-                  {proxmox.nodes.map(node => (
-                    <div className="service-card" key={node.name}>
+              <div className="cards">
+                {filterItems(proxmox.nodes, filters).map(node => (
+                  <div className="service-card" key={node.name}>
                       <div className="card-top">
                         <div>
                           <h3>{node.name}</h3>
@@ -229,6 +240,9 @@ function App() {
                       </div>
                     </div>
                   ))}
+                  {hasActiveFilters(filters) && filterItems(proxmox.nodes, filters).length === 0 && (
+                    <div className="empty-card">No Proxmox nodes match the current filters.</div>
+                  )}
                 </div>
               </>
             )}
@@ -245,12 +259,16 @@ function App() {
             <section id={sectionId} className="section" key={group}>
               <div className="section-header">
                 <h2>{group}</h2>
-                <span>{items.length} systems</span>
+                <span>{filteredCountLabel(services.filter(s => s.category === group).length, items.length)}</span>
               </div>
 
               <div className="cards">
                 {items.length === 0 && (
-                  <div className="empty-card">No services configured in this category yet.</div>
+                  <div className="empty-card">
+                    {hasActiveFilters(filters)
+                      ? "No services match the current filters."
+                      : "No services configured in this category yet."}
+                  </div>
                 )}
 
                 {items.map(service => (
