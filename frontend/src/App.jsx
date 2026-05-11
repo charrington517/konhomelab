@@ -5,6 +5,7 @@ import TdarrPanel from "./components/TdarrPanel";
 import QuickLaunch from "./components/QuickLaunch";
 import SettingsPanel from "./components/SettingsPanel";
 import GpuTelemetry from "./components/GpuTelemetry";
+import SystemHealthOverview from "./components/SystemHealthOverview";
 
 const API_URL = window.location.hostname === "localhost"
   ? "http://localhost:4000/api/services"
@@ -147,6 +148,8 @@ function App() {
           <Metric title="Total Services" value={services.length} label="Tracked systems" />
           <Metric title="Refresh" value="15s" label="Automatic health scan" />
         </section>
+
+        <SystemHealthOverview />
 
         <section className="hero-panel">
           <div>
