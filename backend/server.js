@@ -3,12 +3,14 @@ const cors = require("cors");
 const fs = require("fs");
 const axios = require("axios");
 const https = require("https");
+const testServiceRoutes = require('./routes/testService');
 
 const app = express();
 const PORT = 4000;
 
 app.use(cors());
 app.use(express.json());
+app.use('/api/test-service', testServiceRoutes);
 
 const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
