@@ -4,7 +4,7 @@ import axios from 'axios';
 export default function SettingsPanel() {
   const [configText, setConfigText] = useState('');
   const [status, setStatus] = useState('');
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [testResults, setTestResults] = useState({});
 
   useEffect(() => {

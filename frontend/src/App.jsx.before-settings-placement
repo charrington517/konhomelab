@@ -66,7 +66,6 @@ function App() {
           <a href="#media">Media</a>
           <a href="#downloads">Downloads</a>
           <a href="#tdarr">Tdarr</a>
-          <a href="#settings">Settings</a>
           <a href="#ai">AI Stack</a>
           <a href="#monitoring">Monitoring</a>
         </nav>
@@ -110,11 +109,11 @@ function App() {
           </div>
         </section>
 
-        <AlertCenter />
+        <section id="alerts">
+          <AlertCenter />
 
         <QuickLaunch />
-
-        <SettingsPanel />
+        </section>
 
         {proxmox && proxmox.enabled && (
           <section id="proxmox" className="section">
