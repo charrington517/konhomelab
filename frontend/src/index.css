@@ -318,6 +318,10 @@ a {
   font-size: 13px;
 }
 
+.compact-header {
+  margin-top: 24px;
+}
+
 .cards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

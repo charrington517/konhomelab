@@ -7,6 +7,7 @@ import SettingsPanel from "./components/SettingsPanel";
 import GpuTelemetry from "./components/GpuTelemetry";
 import SystemHealthOverview from "./components/SystemHealthOverview";
 import AiStackOverview from "./components/AiStackOverview";
+import InfrastructureOperations from "./components/InfrastructureOperations";
 
 const API_URL = window.location.hostname === "localhost"
   ? "http://localhost:4000/api/services"
@@ -14,6 +15,7 @@ const API_URL = window.location.hostname === "localhost"
 
 const BASE_NAV_ITEMS = [
   { id: "overview", label: "Overview", short: "OV" },
+  { id: "infrastructure-ops", label: "Ops", short: "OP" },
   { id: "alerts", label: "Alerts", short: "AL" },
   { id: "quicklaunch", label: "Quick Launch", short: "QL" },
   { id: "proxmox", label: "Proxmox", short: "PX" },
@@ -150,6 +152,8 @@ function App() {
         </section>
 
         <SystemHealthOverview />
+
+        <InfrastructureOperations />
 
         <section className="hero-panel">
           <div>
