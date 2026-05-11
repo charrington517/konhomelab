@@ -34,42 +34,10 @@ export default function SettingsPanel() {
   async function testService(type) {
     setTestResults(prev => ({ ...prev, [type]: { testing: true } }));
     try {
-      const parsed = JSON.parse(configText);
-      const configMap = {
-        proxmox: parsed.proxmox,
-        unraid: parsed.unraid,
-        sonarr: parsed.media?.sonarr,
-        radarr: parsed.media?.radarr,
-        qbittorrent: parsed.qbittorrent,
-        prowlarr: parsed.prowlarr,
-        tdarr: parsed.tdarr
-      };
-      
-      const serviceConfig = configMap[type];
-      if (!serviceConfig) {
-        setTestResults(prev => ({
-          ...prev,
-          [type]: {
-            ok: false,
-            message: `No config found for ${type}`
-          }
-        }));
-        return;
-      }
-      
-      const res = await axios.post(`http://${window.location.hostname}:4000/api/test-service`, {
-        type,
-        config: serviceConfig
-      });
+      const res = await axios.post(`http://${window.location.hostname}:4000/api/test-service`, { type });
       setTestResults(prev => ({ ...prev, [type]: res.data }));
     } catch (err) {
-      setTestResults(prev => ({
-        ...prev,
-        [type]: {
-          ok: false,
-          message: err.message
-        }
-      }));
+      setTestResults(prev => ({ ...prev, [type]: { ok: false, message: err.message } }));
     }
   }
 
