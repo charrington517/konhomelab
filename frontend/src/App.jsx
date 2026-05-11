@@ -9,10 +9,24 @@ const API_URL = window.location.hostname === "localhost"
   ? "http://localhost:4000/api/services"
   : `http://${window.location.hostname}:4000/api/services`;
 
+const NAV_ITEMS = [
+  { id: "overview", label: "Overview", short: "OV" },
+  { id: "alerts", label: "Alerts", short: "AL" },
+  { id: "quicklaunch", label: "Quick Launch", short: "QL" },
+  { id: "proxmox", label: "Proxmox", short: "PX" },
+  { id: "unraid", label: "Unraid", short: "UR" },
+  { id: "media", label: "Media", short: "MD" },
+  { id: "tdarr", label: "Tdarr", short: "TD" },
+  { id: "settings", label: "Settings", short: "ST" },
+  { id: "ai", label: "AI Stack", short: "AI" },
+  { id: "monitoring", label: "Monitoring", short: "MN" }
+];
+
 function App() {
   const [services, setServices] = useState([]);
   const [lastUpdated, setLastUpdated] = useState("");
   const [proxmox, setProxmox] = useState(null);
+  const [activeSection, setActiveSection] = useState("overview");
 
   useEffect(() => {
     fetchServices();
@@ -32,6 +46,25 @@ function App() {
       setServices([]);
     }
   }
+
+  useEffect(() => {
+    const updateActiveSection = () => {
+      let current = "overview";
+
+      NAV_ITEMS.forEach(item => {
+        const section = document.getElementById(item.id);
+        if (section && section.getBoundingClientRect().top <= 150) {
+          current = item.id;
+        }
+      });
+
+      setActiveSection(current);
+    };
+
+    updateActiveSection();
+    window.addEventListener("scroll", updateActiveSection, { passive: true });
+    return () => window.removeEventListener("scroll", updateActiveSection);
+  }, []);
 
   const groups = useMemo(() => {
     return {
@@ -58,22 +91,27 @@ function App() {
           </div>
         </div>
 
-        <nav className="nav">
-          <a href="#overview" className="active">Overview</a>
-          <a href="#alerts">Alerts</a>
-          <a href="#proxmox">Proxmox</a>
-          <a href="#unraid">Unraid</a>
-          <a href="#media">Media</a>
-          <a href="#downloads">Downloads</a>
-          <a href="#tdarr">Tdarr</a>
-          <a href="#settings">Settings</a>
-          <a href="#ai">AI Stack</a>
-          <a href="#monitoring">Monitoring</a>
+        <nav className="nav" aria-label="Dashboard sections">
+          {NAV_ITEMS.map(item => (
+            <a
+              href={`#${item.id}`}
+              className={activeSection === item.id ? "active" : ""}
+              aria-current={activeSection === item.id ? "page" : undefined}
+              key={item.id}
+            >
+              <span className="nav-icon">{item.short}</span>
+              <span>{item.label}</span>
+            </a>
+          ))}
         </nav>
 
         <div className="sidebar-footer">
           <div>System Mode</div>
           <strong>Operations</strong>
+          <div className="status-legend" aria-label="Service status legend">
+            <span><i className="legend-dot online"></i>Online</span>
+            <span><i className="legend-dot offline"></i>Offline</span>
+          </div>
         </div>
       </aside>
 
@@ -175,7 +213,13 @@ function App() {
                 )}
 
                 {items.map(service => (
-                  <a className="service-card" href={service.url} target="_blank" rel="noreferrer" key={service.name}>
+                  <a
+                    className={`service-card ${service.status === "offline" ? "is-offline" : ""}`}
+                    href={service.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    key={service.name}
+                  >
                     <div className="card-top">
                       <div>
                         <h3>{service.name}</h3>
