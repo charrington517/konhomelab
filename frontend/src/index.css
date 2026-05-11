@@ -492,6 +492,7 @@ a {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
+  gap: 12px;
 }
 
 .section-header h2 {
@@ -504,6 +505,74 @@ a {
 .section-header span {
   color: var(--text-muted);
   font-size: 13px;
+}
+
+.collapsible-section.is-collapsed {
+  margin-bottom: 12px;
+}
+
+.collapsible-section.is-collapsed .section-header {
+  margin-bottom: 0;
+}
+
+.collapsible-header {
+  align-items: stretch;
+}
+
+.collapse-toggle {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.collapse-toggle:hover .collapse-indicator {
+  color: #eff6ff;
+  border-color: rgba(96, 165, 250, 0.42);
+  background: rgba(37, 99, 235, 0.24);
+}
+
+.collapse-indicator {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.72);
+  color: var(--text-soft);
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.collapse-toggle strong {
+  display: block;
+  color: var(--text-main);
+  font-size: 18px;
+  letter-spacing: 0.01em;
+}
+
+.collapse-toggle small {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.collapsible-content {
+  display: grid;
+  gap: 0;
 }
 
 .compact-header {
@@ -1056,6 +1125,18 @@ a {
 
   .filter-count {
     justify-content: flex-start;
+  }
+
+  .collapsible-header {
+    align-items: flex-start;
+  }
+
+  .collapse-toggle strong {
+    font-size: 16px;
+  }
+
+  .collapse-toggle small {
+    font-size: 12px;
   }
 
   .status-grid,

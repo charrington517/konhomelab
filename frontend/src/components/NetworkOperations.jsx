@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { DEFAULT_FILTERS, filterItems, filteredCountLabel, hasActiveFilters } from "../filterUtils";
+import CollapsibleSection from "./CollapsibleSection";
 
 const API_BASE = `http://${window.location.hostname}:4000/api`;
 const NETWORK_TERMS = [
@@ -93,14 +94,13 @@ function NetworkOperations({ services, filters = DEFAULT_FILTERS }) {
   const warningCount = (network?.warnings?.length || 0) + slowServices.length + offlineNetworkServices.length;
 
   return (
-    <section id="network" className="section">
-      <div className="section-header">
-        <div>
-          <h2>Network Operations</h2>
-          <span>Read-only WAN, tunnel, DNS, monitoring, and service latency visibility</span>
-        </div>
-      </div>
-
+    <CollapsibleSection
+      id="network"
+      sectionKey="network-ops"
+      title="Network Operations"
+      subtitle="Read-only WAN, tunnel, DNS, monitoring, and service latency visibility"
+      meta={`${warningCount} warnings`}
+    >
       <div className="status-grid">
         <Metric
           title="WAN"
@@ -196,7 +196,7 @@ function NetworkOperations({ services, filters = DEFAULT_FILTERS }) {
           </div>
         ))}
       </div>
-    </section>
+    </CollapsibleSection>
   );
 }
 

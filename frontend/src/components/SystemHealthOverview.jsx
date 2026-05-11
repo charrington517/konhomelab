@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import CollapsibleSection from "./CollapsibleSection";
 
 const API_BASE = `http://${window.location.hostname}:4000/api`;
 
@@ -98,15 +99,14 @@ function SystemHealthOverview() {
   }, [systems]);
 
   return (
-    <section className="section health-overview">
-      <div className="section-header">
-        <div>
-          <h2>System Health Overview</h2>
-          <span>Compact read-only status across core lab services</span>
-        </div>
-        <span>{lastScan ? `Last scan ${lastScan}` : "Scanning..."}</span>
-      </div>
-
+    <CollapsibleSection
+      id="system-health"
+      sectionKey="system-health"
+      className="health-overview"
+      title="System Health Overview"
+      subtitle="Compact read-only status across core lab services"
+      meta={lastScan ? `Last scan ${lastScan}` : "Scanning..."}
+    >
       <div className="status-grid">
         <Metric title="Healthy" value={counts.healthy} label="No action needed" />
         <Metric title="Warnings" value={counts.warning} label="Watch list" tone={counts.warning > 0 ? "warning" : ""} />
@@ -123,7 +123,7 @@ function SystemHealthOverview() {
           </div>
         ))}
       </div>
-    </section>
+    </CollapsibleSection>
   );
 }
 

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { DEFAULT_FILTERS, filterItems, filteredCountLabel, hasActiveFilters } from "../filterUtils";
+import CollapsibleSection from "./CollapsibleSection";
 
 const API_BASE = `http://${window.location.hostname}:4000/api`;
 
@@ -70,14 +71,13 @@ function InfrastructureOperations({ filters = DEFAULT_FILTERS }) {
   }), [guests, containers]);
 
   return (
-    <section id="infrastructure-ops" className="section">
-      <div className="section-header">
-        <div>
-          <h2>Infrastructure Operations</h2>
-          <span>Read-only Proxmox guests and Unraid Docker visibility</span>
-        </div>
-      </div>
-
+    <CollapsibleSection
+      id="infrastructure-ops"
+      sectionKey="infrastructure-ops"
+      title="Infrastructure Operations"
+      subtitle="Read-only Proxmox guests and Unraid Docker visibility"
+      meta={`${counts.stoppedGuests + counts.stoppedContainers} warnings`}
+    >
       <div className="status-grid">
         <Metric title="Proxmox VMs" value={vms.length} label={`${vms.filter(vm => vm.status === "running").length} running`} />
         <Metric title="Proxmox LXCs" value={lxcs.length} label={`${lxcs.filter(lxc => lxc.status === "running").length} running`} danger={counts.stoppedGuests > 0} />
@@ -152,7 +152,7 @@ function InfrastructureOperations({ filters = DEFAULT_FILTERS }) {
           </div>
         ))}
       </div>
-    </section>
+    </CollapsibleSection>
   );
 }
 

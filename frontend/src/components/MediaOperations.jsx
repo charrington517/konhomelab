@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { DEFAULT_FILTERS, filterItems, filteredCountLabel, hasActiveFilters } from "../filterUtils";
+import CollapsibleSection from "./CollapsibleSection";
 
 const API_BASE = `http://${window.location.hostname}:4000/api`;
 const MEDIA_SERVICES = ["Plex", "Jellyfin"];
@@ -167,14 +168,13 @@ function MediaOperations({ services, filters = DEFAULT_FILTERS }) {
   })), filters);
 
   return (
-    <section id="media" className="section">
-      <div className="section-header">
-        <div>
-          <h2>Media Operations</h2>
-          <span>Read-only automation, indexer, downloader, and playback health</span>
-        </div>
-      </div>
-
+    <CollapsibleSection
+      id="media"
+      sectionKey="media-ops"
+      title="Media Operations"
+      subtitle="Read-only automation, indexer, downloader, and playback health"
+      meta={`${warnings} warnings`}
+    >
       <div className="status-grid">
         <Metric title="Queue" value={queueDepth} label="Sonarr/Radarr items" danger={queueDepth > 0} />
         <Metric title="Missing" value={missingCount} label="Wanted media backlog" danger={missingCount > 0} />
@@ -239,7 +239,7 @@ function MediaOperations({ services, filters = DEFAULT_FILTERS }) {
           </a>
         ))}
       </div>
-    </section>
+    </CollapsibleSection>
   );
 }
 

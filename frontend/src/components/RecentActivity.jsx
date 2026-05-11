@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import CollapsibleSection from "./CollapsibleSection";
 
 const API_BASE = `http://${window.location.hostname}:4000/api`;
 const SEVERITY_WEIGHT = { critical: 0, warning: 1, info: 2 };
@@ -213,15 +214,14 @@ export default function RecentActivity() {
   const warnings = events.filter(event => event.severity === "warning").length;
 
   return (
-    <section id="activity" className="section recent-activity">
-      <div className="section-header">
-        <div>
-          <h2>Recent Activity</h2>
-          <span>Generated from current summaries and in-session service changes</span>
-        </div>
-        <span>{lastScan ? `Last scan ${lastScan}` : "Scanning..."}</span>
-      </div>
-
+    <CollapsibleSection
+      id="activity"
+      sectionKey="recent-activity"
+      className="recent-activity"
+      title="Recent Activity"
+      subtitle="Generated from current summaries and in-session service changes"
+      meta={lastScan ? `Last scan ${lastScan}` : "Scanning..."}
+    >
       <div className="activity-summary">
         <span><strong>{events.length}</strong> events</span>
         <span><strong>{critical}</strong> critical</span>
@@ -247,6 +247,6 @@ export default function RecentActivity() {
           ))
         )}
       </div>
-    </section>
+    </CollapsibleSection>
   );
 }

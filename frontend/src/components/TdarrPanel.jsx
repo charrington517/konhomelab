@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import CollapsibleSection from "./CollapsibleSection";
 
 function Metric({ title, value, label, danger }) {
   return (
@@ -56,14 +57,13 @@ function TdarrPanel() {
     : "Unavailable";
 
   return (
-    <section id="tdarr" className="section">
-      <div className="section-header">
-        <div>
-          <h2>Tdarr Operations</h2>
-          <span>Read-only server, worker, queue, and transcode telemetry</span>
-        </div>
-      </div>
-
+    <CollapsibleSection
+      id="tdarr"
+      sectionKey="tdarr-ops"
+      title="Tdarr Operations"
+      subtitle="Read-only server, worker, queue, and transcode telemetry"
+      meta={`${warnings.length} warnings`}
+    >
       <div className="status-grid">
         <Metric
           title="Tdarr API"
@@ -131,7 +131,7 @@ function TdarrPanel() {
           </div>
         ))}
       </div>
-    </section>
+    </CollapsibleSection>
   );
 }
 

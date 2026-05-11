@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { DEFAULT_FILTERS, filterItems, hasActiveFilters } from "../filterUtils";
+import CollapsibleSection from "./CollapsibleSection";
 
 const STORAGE_KEY = "konhomelab:pinned-services";
 const DEFAULT_PINNED = ["Proxmox", "Unraid", "AI Dashboard", "Grafana", "Sonarr", "qBittorrent"];
@@ -75,15 +76,14 @@ function PinnedServices({ services, filters = DEFAULT_FILTERS }) {
   }
 
   return (
-    <section id="pinned" className="section pinned-services">
-      <div className="section-header">
-        <div>
-          <h2>Pinned Services</h2>
-          <span>Local browser favorites for fast operational access</span>
-        </div>
-        <span>{storageAvailable ? "Saved locally" : "Session only"}</span>
-      </div>
-
+    <CollapsibleSection
+      id="pinned"
+      sectionKey="pinned-services"
+      className="pinned-services"
+      title="Pinned Services"
+      subtitle="Local browser favorites for fast operational access"
+      meta={storageAvailable ? "Saved locally" : "Session only"}
+    >
       <div className="pinned-grid">
         {visiblePinned.length === 0 && (
           <div className="empty-card">
@@ -130,7 +130,7 @@ function PinnedServices({ services, filters = DEFAULT_FILTERS }) {
           ))
         )}
       </div>
-    </section>
+    </CollapsibleSection>
   );
 }
 

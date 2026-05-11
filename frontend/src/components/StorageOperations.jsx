@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { DEFAULT_FILTERS, filterItems, filteredCountLabel, hasActiveFilters } from "../filterUtils";
+import CollapsibleSection from "./CollapsibleSection";
 
 const API_BASE = `http://${window.location.hostname}:4000/api`;
 const STORAGE_SERVICES = ["Immich", "Nextcloud"];
@@ -93,14 +94,13 @@ function StorageOperations({ services, filters = DEFAULT_FILTERS }) {
   }
 
   return (
-    <section id="storage" className="section">
-      <div className="section-header">
-        <div>
-          <h2>Storage Operations</h2>
-          <span>Read-only Unraid array, parity, cache, and storage app health</span>
-        </div>
-      </div>
-
+    <CollapsibleSection
+      id="storage"
+      sectionKey="storage-ops"
+      title="Storage Operations"
+      subtitle="Read-only Unraid array, parity, cache, and storage app health"
+      meta={`${counts.problemDisks + counts.problemParity + counts.problemCaches} warnings`}
+    >
       <div className="status-grid">
         <Metric
           title="Array"
@@ -233,7 +233,7 @@ function StorageOperations({ services, filters = DEFAULT_FILTERS }) {
           </div>
         ))}
       </div>
-    </section>
+    </CollapsibleSection>
   );
 }
 

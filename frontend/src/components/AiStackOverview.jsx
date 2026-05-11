@@ -1,4 +1,5 @@
 import { DEFAULT_FILTERS, filterItems, filteredCountLabel, hasActiveFilters } from "../filterUtils";
+import CollapsibleSection from "./CollapsibleSection";
 
 const AI_TARGETS = [
   "Ollama",
@@ -39,15 +40,13 @@ function AiStackOverview({ services, filters = DEFAULT_FILTERS }) {
   const unavailable = aiServices.length - online;
 
   return (
-    <section id="ai" className="section">
-      <div className="section-header">
-        <div>
-          <h2>AI Stack Overview</h2>
-          <span>Read-only status for local AI tools and automation services</span>
-        </div>
-        <span>{filteredCountLabel(aiServices.length, visibleAiServices.length)} - {online} online / {unavailable} unavailable</span>
-      </div>
-
+    <CollapsibleSection
+      id="ai"
+      sectionKey="ai-stack"
+      title="AI Stack Overview"
+      subtitle="Read-only status for local AI tools and automation services"
+      meta={`${filteredCountLabel(aiServices.length, visibleAiServices.length)} - ${online} online / ${unavailable} unavailable`}
+    >
       <div className="cards">
         {visibleAiServices.length === 0 && (
           <div className="empty-card">
@@ -89,7 +88,7 @@ function AiStackOverview({ services, filters = DEFAULT_FILTERS }) {
           );
         })}
       </div>
-    </section>
+    </CollapsibleSection>
   );
 }
 

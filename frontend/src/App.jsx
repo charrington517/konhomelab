@@ -253,9 +253,7 @@ function App() {
           </section>
         )}
 
-        <section id="tdarr">
-          <TdarrPanel />
-        </section>
+        <TdarrPanel />
 
         {Object.entries(groups).map(([group, items]) => {
           const sectionId = group.toLowerCase().replace(/\s+/g, '-');
