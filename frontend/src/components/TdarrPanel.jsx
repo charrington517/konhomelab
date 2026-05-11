@@ -11,6 +11,10 @@ function Metric({ title, value, label, danger }) {
   );
 }
 
+function safeCount(value) {
+  return typeof value === "number" ? value : 0;
+}
+
 function TdarrPanel() {
   const [tdarr, setTdarr] = useState(null);
 
@@ -25,7 +29,18 @@ function TdarrPanel() {
       const tdarrRes = await axios.get(`http://${window.location.hostname}:4000/api/tdarr/summary`);
       setTdarr(tdarrRes.data);
     } catch {
-      setTdarr({ enabled: true, connected: false, error: "Tdarr request failed" });
+      setTdarr({
+        enabled: true,
+        connected: false,
+        warnings: ["Tdarr request failed"],
+        counts: {
+          nodes: 0,
+          workers: 0,
+          activeWorkers: 0,
+          activeJobs: 0,
+          queueDepth: 0
+        }
+      });
     }
   }
 
@@ -33,12 +48,19 @@ function TdarrPanel() {
     return null;
   }
 
+  const counts = tdarr.counts || {};
+  const warnings = tdarr.warnings || [];
+  const version = tdarr.server?.version || "Unknown";
+  const uptime = tdarr.server?.uptime
+    ? `${Math.floor(tdarr.server.uptime / 3600)}h`
+    : "Unavailable";
+
   return (
     <section id="tdarr" className="section">
       <div className="section-header">
         <div>
           <h2>Tdarr Operations</h2>
-          <span>Transcoding, workers, and media processing</span>
+          <span>Read-only server, worker, queue, and transcode telemetry</span>
         </div>
       </div>
 
@@ -46,31 +68,27 @@ function TdarrPanel() {
         <Metric
           title="Tdarr API"
           value={tdarr.connected ? "Live" : "Off"}
-          label="Server connection"
+          label={`Version ${version}`}
           danger={!tdarr.connected}
         />
 
         <Metric
-          title="Warnings"
-          value={tdarr.warnings?.length || 0}
-          label="Endpoint issues"
-          danger={(tdarr.warnings?.length || 0) > 0}
-        />
-
-        <Metric
           title="Nodes"
-          value={
-            Array.isArray(tdarr.nodes)
-              ? tdarr.nodes.length
-              : tdarr.nodes?.length || "Check"
-          }
-          label="Worker visibility"
+          value={safeCount(counts.nodes)}
+          label={`${safeCount(counts.workers)} workers visible`}
         />
 
         <Metric
-          title="Status"
-          value={tdarr.connected ? "Ready" : "Setup"}
-          label="Processing layer"
+          title="Active"
+          value={safeCount(counts.activeWorkers)}
+          label={`${safeCount(counts.activeJobs)} jobs/transcodes`}
+        />
+
+        <Metric
+          title="Queue"
+          value={safeCount(counts.queueDepth)}
+          label="Items waiting if exposed"
+          danger={safeCount(counts.queueDepth) > 0}
         />
       </div>
 
@@ -79,7 +97,11 @@ function TdarrPanel() {
           <div className="card-top">
             <div>
               <h3>Tdarr Server</h3>
-              <p>{tdarr.error || "Media transcoding control plane"}</p>
+              <p>
+                {tdarr.connected
+                  ? `Server status ${tdarr.server?.status || "good"} - uptime ${uptime}`
+                  : tdarr.error || "Tdarr server status unavailable"}
+              </p>
             </div>
             <div className={`status-dot ${tdarr.connected ? "online" : "offline"}`} />
           </div>
@@ -92,8 +114,8 @@ function TdarrPanel() {
           </div>
         </div>
 
-        {tdarr.warnings?.map(warning => (
-          <div className="service-card" key={warning}>
+        {warnings.map(warning => (
+          <div className="service-card is-offline" key={warning}>
             <div className="card-top">
               <div>
                 <h3>Endpoint Warning</h3>

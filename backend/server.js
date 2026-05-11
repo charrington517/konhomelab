@@ -528,25 +528,156 @@ app.get("/api/tdarr/summary", async (req, res) => {
 
     const base = config.tdarr.url;
 
-    const [stats, nodes] = await Promise.allSettled([
-      axios.get(`${base}/api/v2/stats`, { timeout: 6000 }),
-      axios.get(`${base}/api/v2/nodes`, { timeout: 6000 })
+    async function tdarrGet(name, path) {
+      try {
+        const response = await axios.get(`${base}${path}`, {
+          timeout: 6000,
+          validateStatus: () => true
+        });
+
+        if (response.status >= 200 && response.status < 300) {
+          return {
+            name,
+            path,
+            ok: true,
+            status: response.status,
+            data: response.data
+          };
+        }
+
+        return {
+          name,
+          path,
+          ok: false,
+          status: response.status,
+          error: response.data?.message || response.statusText || "Endpoint unavailable"
+        };
+      } catch (err) {
+        return {
+          name,
+          path,
+          ok: false,
+          error: err.message
+        };
+      }
+    }
+
+    function asArray(value) {
+      if (Array.isArray(value)) return value;
+      if (!value || typeof value !== "object") return [];
+
+      const candidates = [
+        value.nodes,
+        value.workers,
+        value.data,
+        value.results,
+        value.items,
+        value.queue,
+        value.jobs,
+        value.transcodes
+      ];
+
+      return candidates.find(Array.isArray) || [];
+    }
+
+    function countFromPayload(payload, keys) {
+      if (!payload || typeof payload !== "object") return null;
+
+      for (const key of keys) {
+        const value = payload[key];
+        if (typeof value === "number") return value;
+        if (Array.isArray(value)) return value.length;
+      }
+
+      return null;
+    }
+
+    const [status, stats, nodes, queue, jobs, workers, transcodes] = await Promise.all([
+      tdarrGet("Status", "/api/v2/status"),
+      tdarrGet("Stats", "/api/v2/stats"),
+      tdarrGet("Nodes", "/api/v2/nodes"),
+      tdarrGet("Queue", "/api/v2/queue"),
+      tdarrGet("Jobs", "/api/v2/jobs"),
+      tdarrGet("Workers", "/api/v2/workers"),
+      tdarrGet("Transcodes", "/api/v2/transcodes")
     ]);
+
+    const nodeList = asArray(nodes.data);
+    const workerList = asArray(workers.data);
+    const jobList = asArray(jobs.data);
+    const transcodeList = asArray(transcodes.data);
+    const queueList = asArray(queue.data);
+
+    const activeWorkers = workerList.filter(worker => {
+      const state = String(worker.status || worker.state || worker.activity || "").toLowerCase();
+      return state.includes("active") || state.includes("running") || state.includes("transcod");
+    }).length;
+
+    const activeJobs = [
+      countFromPayload(stats.data, ["activeJobs", "activeTranscodes", "active"]),
+      transcodeList.length || null,
+      jobList.filter(job => {
+        const state = String(job.status || job.state || "").toLowerCase();
+        return state.includes("active") || state.includes("running") || state.includes("transcod");
+      }).length || null
+    ].find(value => value !== null) || 0;
+
+    const queueDepth = [
+      countFromPayload(stats.data, ["queueDepth", "queued", "queue", "pending"]),
+      countFromPayload(queue.data, ["queueDepth", "queued", "pending", "total"]),
+      queueList.length || null
+    ].find(value => value !== null) || 0;
+
+    const endpointResults = [status, stats, nodes, queue, jobs, workers, transcodes];
+    const warnings = endpointResults
+      .filter(endpoint => !endpoint.ok)
+      .map(endpoint => `${endpoint.name} endpoint unavailable${endpoint.status ? ` (${endpoint.status})` : ""}`);
 
     res.json({
       enabled: true,
-      connected: true,
-      stats: stats.status === "fulfilled" ? stats.value.data : null,
-      nodes: nodes.status === "fulfilled" ? nodes.value.data : null,
-      warnings: [
-        stats.status === "rejected" ? "Stats endpoint unavailable" : null,
-        nodes.status === "rejected" ? "Nodes endpoint unavailable" : null
-      ].filter(Boolean)
+      connected: status.ok,
+      server: status.ok ? status.data : null,
+      stats: stats.ok ? stats.data : null,
+      nodes: nodeList,
+      workers: workerList,
+      jobs: jobList,
+      transcodes: transcodeList,
+      queue: queueList,
+      counts: {
+        nodes: nodeList.length,
+        workers: workerList.length,
+        activeWorkers,
+        activeJobs,
+        queueDepth
+      },
+      endpoints: endpointResults.map(endpoint => ({
+        name: endpoint.name,
+        path: endpoint.path,
+        ok: endpoint.ok,
+        status: endpoint.status || null,
+        error: endpoint.error || null
+      })),
+      warnings
     });
   } catch (err) {
-    res.status(500).json({
+    res.json({
       enabled: true,
       connected: false,
+      server: null,
+      nodes: [],
+      workers: [],
+      jobs: [],
+      transcodes: [],
+      queue: [],
+      counts: {
+        nodes: 0,
+        workers: 0,
+        activeWorkers: 0,
+        activeJobs: 0,
+        queueDepth: 0
+      },
+      endpoints: [],
+      warnings: ["Tdarr summary request failed"],
       error: err.message
     });
   }
