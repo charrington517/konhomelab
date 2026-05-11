@@ -7,6 +7,7 @@ import SettingsPanel from "./components/SettingsPanel";
 import GpuTelemetry from "./components/GpuTelemetry";
 import GlobalFilterBar from "./components/GlobalFilterBar";
 import HeaderSummaryBar from "./components/HeaderSummaryBar";
+import PinnedServices from "./components/PinnedServices";
 import SystemHealthOverview from "./components/SystemHealthOverview";
 import RecentActivity from "./components/RecentActivity";
 import AiStackOverview from "./components/AiStackOverview";
@@ -22,6 +23,7 @@ const API_URL = window.location.hostname === "localhost"
 
 const BASE_NAV_ITEMS = [
   { id: "overview", label: "Overview", short: "OV" },
+  { id: "pinned", label: "Pinned", short: "PN" },
   { id: "activity", label: "Activity", short: "AC" },
   { id: "infrastructure-ops", label: "Ops", short: "OP" },
   { id: "alerts", label: "Alerts", short: "AL" },
@@ -169,6 +171,8 @@ function App() {
           <Metric title="Total Services" value={services.length} label="Tracked systems" />
           <Metric title="Refresh" value="15s" label="Automatic health scan" />
         </section>
+
+        <PinnedServices services={services} filters={filters} />
 
         <SystemHealthOverview />
 

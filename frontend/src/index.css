@@ -516,6 +516,83 @@ a {
   gap: 12px;
 }
 
+.pinned-services {
+  border-top-color: rgba(96, 165, 250, 0.16);
+}
+
+.pinned-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.pinned-card {
+  min-height: 132px;
+}
+
+.pinned-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.pinned-actions a,
+.pinned-actions button,
+.pin-tray button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  background: rgba(37, 99, 235, 0.16);
+  color: #bfdbfe;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.pinned-actions button,
+.pin-tray button {
+  border-color: rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.72);
+  color: var(--text-soft);
+}
+
+.pinned-actions button:hover,
+.pin-tray button:hover {
+  color: #eff6ff;
+  border-color: rgba(96, 165, 250, 0.42);
+}
+
+.pin-tray {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.58);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.pin-tray span {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.pin-tray strong {
+  color: var(--text-soft);
+  font-size: 12px;
+}
+
 .service-card,
 .empty-card {
   min-height: 118px;
@@ -920,7 +997,8 @@ a {
 
 @media (max-width: 1100px) {
   .status-grid,
-  .cards {
+  .cards,
+  .pinned-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -982,6 +1060,7 @@ a {
 
   .status-grid,
   .cards,
+  .pinned-grid,
   .pipeline-strip {
     grid-template-columns: 1fr;
   }
