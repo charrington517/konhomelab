@@ -29,13 +29,63 @@ The dashboard is stable with:
 ## Critical Rules
 
 - Always inspect `git status` before editing.
-- Create a checkpoint commit before risky or multi-file changes.
+- Create a checkpoint commit before any code changes.
 - Do not touch backend files unless the task specifically requires it.
 - Do not add imports without verifying the referenced file/package exists.
-- Do not claim success until the relevant build passes.
-- For frontend work, also check browser/runtime console errors when possible.
+- Do not claim success until build and runtime verification both pass.
+- For frontend work, check browser/runtime console errors when possible.
 - Keep edits narrow and aligned with the existing component patterns.
 - Never include secrets, passwords, tokens, or API keys in commits or docs.
+
+## Required Safe Workflow
+
+Before any code changes:
+
+1. Run `git status --short`.
+2. Create a checkpoint commit:
+
+```bash
+git add .
+git commit -m "Checkpoint before <task>"
+```
+
+For each change:
+
+1. Make one isolated change only.
+2. Run the frontend build:
+
+```bash
+docker compose build frontend
+```
+
+3. If the build succeeds, deploy the frontend:
+
+```bash
+docker compose up -d frontend
+```
+
+4. Verify in the browser:
+
+- No blank screen
+- No console errors
+- The feature works
+
+5. Only then commit the final change.
+
+## Forbidden Actions
+
+- No JSX via shell heredocs.
+- No multi-component integrations in one step.
+- No runtime imports without validation.
+- No claiming success before runtime verification.
+- No modifying backend during frontend-only tasks.
+
+## Preferred Method
+
+- Edit existing files when possible.
+- Keep diffs small.
+- Work on one feature at a time.
+- Roll back immediately on runtime error.
 
 ## Known Risk Areas
 
@@ -48,13 +98,14 @@ The dashboard is stable with:
 ## Safe Frontend Workflow
 
 1. Run `git status --short`.
-2. Review the relevant files before editing.
-3. Make the smallest useful change.
-4. Run the frontend build.
-5. Restart only the frontend service when appropriate.
-6. Check container status.
-7. Verify the dashboard loads and has no obvious runtime errors.
-8. Commit only after validation succeeds.
+2. Create a checkpoint commit before edits.
+3. Review the relevant files before editing.
+4. Make the smallest useful change.
+5. Run `docker compose build frontend`.
+6. If the build passes, run `docker compose up -d frontend`.
+7. Check container status.
+8. Verify the dashboard loads, has no console errors, and the feature works.
+9. Commit only after validation succeeds.
 
 ## Common Commands
 
