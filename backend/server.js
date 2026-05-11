@@ -564,6 +564,13 @@ app.get("/api/gpu/summary", async (req, res) => {
     "power.limit"
   ];
 
+  const unavailableSource = (name, reason) => ({
+    name,
+    enabled: false,
+    connected: false,
+    reason
+  });
+
   try {
     const output = await runCommand("nvidia-smi", [
       `--query-gpu=${fields.join(",")}`,
@@ -594,20 +601,42 @@ app.get("/api/gpu/summary", async (req, res) => {
         };
       });
 
-    res.json({
+    const local = {
+      name: "Local Dashboard LXC",
       enabled: gpus.length > 0,
       connected: gpus.length > 0,
       source: "nvidia-smi",
       gpus
+    };
+
+    const sources = {
+      local,
+      aiCore: unavailableSource("AI Core", "future source not configured"),
+      unraidTdarr: unavailableSource("Unraid Tdarr", "future source not configured")
+    };
+
+    res.json({
+      enabled: Object.values(sources).some(source => source.enabled),
+      connected: Object.values(sources).some(source => source.connected),
+      sources,
+      gpus
     });
   } catch (err) {
     const unavailable = err.code === "ENOENT" || err.message.includes("nvidia-smi");
+    const sources = {
+      local: unavailableSource(
+        "Local Dashboard LXC",
+        unavailable ? "nvidia-smi unavailable" : err.message
+      ),
+      aiCore: unavailableSource("AI Core", "future source not configured"),
+      unraidTdarr: unavailableSource("Unraid Tdarr", "future source not configured")
+    };
 
     res.json({
       enabled: false,
       connected: false,
-      source: "nvidia-smi",
-      reason: unavailable ? "nvidia-smi unavailable" : err.message
+      sources,
+      gpus: []
     });
   }
 });

@@ -10,7 +10,7 @@ const API_URL = window.location.hostname === "localhost"
   ? "http://localhost:4000/api/services"
   : `http://${window.location.hostname}:4000/api/services`;
 
-const NAV_ITEMS = [
+const BASE_NAV_ITEMS = [
   { id: "overview", label: "Overview", short: "OV" },
   { id: "alerts", label: "Alerts", short: "AL" },
   { id: "quicklaunch", label: "Quick Launch", short: "QL" },
@@ -28,6 +28,7 @@ function App() {
   const [services, setServices] = useState([]);
   const [lastUpdated, setLastUpdated] = useState("");
   const [proxmox, setProxmox] = useState(null);
+  const [gpuSummary, setGpuSummary] = useState(null);
   const [activeSection, setActiveSection] = useState("overview");
 
   useEffect(() => {
@@ -44,16 +45,27 @@ function App() {
       
       const pve = await axios.get(`http://${window.location.hostname}:4000/api/proxmox/summary`);
       setProxmox(pve.data);
+
+      try {
+        const gpu = await axios.get(`http://${window.location.hostname}:4000/api/gpu/summary`);
+        setGpuSummary(gpu.data);
+      } catch {
+        setGpuSummary({ enabled: false });
+      }
     } catch {
       setServices([]);
     }
   }
 
+  const navItems = useMemo(() => {
+    return BASE_NAV_ITEMS.filter(item => item.id !== "gpu" || gpuSummary?.enabled);
+  }, [gpuSummary]);
+
   useEffect(() => {
     const updateActiveSection = () => {
       let current = "overview";
 
-      NAV_ITEMS.forEach(item => {
+      navItems.forEach(item => {
         const section = document.getElementById(item.id);
         if (section && section.getBoundingClientRect().top <= 150) {
           current = item.id;
@@ -66,7 +78,7 @@ function App() {
     updateActiveSection();
     window.addEventListener("scroll", updateActiveSection, { passive: true });
     return () => window.removeEventListener("scroll", updateActiveSection);
-  }, []);
+  }, [navItems]);
 
   const groups = useMemo(() => {
     return {
@@ -94,7 +106,7 @@ function App() {
         </div>
 
         <nav className="nav" aria-label="Dashboard sections">
-          {NAV_ITEMS.map(item => (
+          {navItems.map(item => (
             <a
               href={`#${item.id}`}
               className={activeSection === item.id ? "active" : ""}
@@ -154,7 +166,7 @@ function App() {
 
         <QuickLaunch />
 
-        <GpuTelemetry />
+        <GpuTelemetry summary={gpuSummary} />
 
         <SettingsPanel />
 

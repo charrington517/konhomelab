@@ -11,14 +11,23 @@ function formatMemory(gpu) {
   return `${usedGB} / ${totalGB} GB`;
 }
 
-function GpuTelemetry() {
-  const [summary, setSummary] = useState(null);
+function sourceLabel(source) {
+  return source?.name || "GPU Source";
+}
+
+function GpuTelemetry({ summary: providedSummary }) {
+  const [summary, setSummary] = useState(providedSummary || null);
 
   useEffect(() => {
+    if (providedSummary) {
+      setSummary(providedSummary);
+      return undefined;
+    }
+
     fetchGpuSummary();
     const timer = setInterval(fetchGpuSummary, 15000);
     return () => clearInterval(timer);
-  }, []);
+  }, [providedSummary]);
 
   async function fetchGpuSummary() {
     try {
@@ -29,7 +38,10 @@ function GpuTelemetry() {
     }
   }
 
-  if (!summary?.enabled || !summary.gpus?.length) {
+  const availableSources = Object.entries(summary?.sources || {})
+    .filter(([, source]) => source.enabled && source.gpus?.length);
+
+  if (!summary?.enabled || availableSources.length === 0) {
     return null;
   }
 
@@ -38,32 +50,34 @@ function GpuTelemetry() {
       <div className="section-header">
         <div>
           <h2>GPU Telemetry</h2>
-          <span>Read-only accelerator status from nvidia-smi</span>
+          <span>Read-only accelerator status across configured sources</span>
         </div>
       </div>
 
       <div className="cards">
-        {summary.gpus.map(gpu => (
-          <div className="service-card" key={`${gpu.index}-${gpu.name}`}>
-            <div className="card-top">
-              <div>
-                <h3>{gpu.name}</h3>
-                <p>
-                  Temp {gpu.temperatureC ?? "N/A"}C • Load {gpu.utilizationPercent ?? "N/A"}% • VRAM {formatMemory(gpu)}
-                </p>
+        {availableSources.flatMap(([sourceKey, source]) => (
+          source.gpus.map(gpu => (
+            <div className="service-card" key={`${sourceKey}-${gpu.index}-${gpu.name}`}>
+              <div className="card-top">
+                <div>
+                  <h3>{gpu.name}</h3>
+                  <p>
+                    {sourceLabel(source)} - Temp {gpu.temperatureC ?? "N/A"}C - Load {gpu.utilizationPercent ?? "N/A"}% - VRAM {formatMemory(gpu)}
+                  </p>
+                </div>
+                <div className={`status-dot ${source.connected ? "online" : "offline"}`} />
               </div>
-              <div className={`status-dot ${summary.connected ? "online" : "offline"}`} />
-            </div>
 
-            <div className="card-bottom">
-              <span className="ok">read only</span>
-              <span>
-                {gpu.powerDrawW !== null && gpu.powerLimitW !== null
-                  ? `${gpu.powerDrawW} / ${gpu.powerLimitW} W`
-                  : "Power unavailable"}
-              </span>
+              <div className="card-bottom">
+                <span className="ok">read only</span>
+                <span>
+                  {gpu.powerDrawW !== null && gpu.powerLimitW !== null
+                    ? `${gpu.powerDrawW} / ${gpu.powerLimitW} W`
+                    : "Power unavailable"}
+                </span>
+              </div>
             </div>
-          </div>
+          ))
         ))}
       </div>
     </section>
