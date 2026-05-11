@@ -3,6 +3,7 @@ const cors = require("cors");
 const fs = require("fs");
 const axios = require("axios");
 const https = require("https");
+const { execFile } = require("child_process");
 const testServiceRoutes = require('./routes/testService');
 
 const app = express();
@@ -22,6 +23,29 @@ function loadConfig() {
 function pct(value) {
   if (value === undefined || value === null) return 0;
   return Math.round(value * 100);
+}
+
+function runCommand(command, args, timeout = 5000) {
+  return new Promise((resolve, reject) => {
+    execFile(command, args, { timeout }, (error, stdout, stderr) => {
+      if (error) {
+        error.stderr = stderr;
+        reject(error);
+        return;
+      }
+
+      resolve(stdout);
+    });
+  });
+}
+
+function parseNumber(value) {
+  if (value === undefined || value === null || value === "" || value === "[N/A]") {
+    return null;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 app.get("/api/services", async (req, res) => {
@@ -524,6 +548,66 @@ app.get("/api/tdarr/summary", async (req, res) => {
       enabled: true,
       connected: false,
       error: err.message
+    });
+  }
+});
+
+app.get("/api/gpu/summary", async (req, res) => {
+  const fields = [
+    "index",
+    "name",
+    "temperature.gpu",
+    "utilization.gpu",
+    "memory.used",
+    "memory.total",
+    "power.draw",
+    "power.limit"
+  ];
+
+  try {
+    const output = await runCommand("nvidia-smi", [
+      `--query-gpu=${fields.join(",")}`,
+      "--format=csv,noheader,nounits"
+    ]);
+
+    const gpus = output
+      .trim()
+      .split("\n")
+      .map(line => line.split(",").map(part => part.trim()))
+      .filter(parts => parts.length >= fields.length)
+      .map(parts => {
+        const memoryUsedMB = parseNumber(parts[4]);
+        const memoryTotalMB = parseNumber(parts[5]);
+
+        return {
+          index: parseNumber(parts[0]),
+          name: parts[1],
+          temperatureC: parseNumber(parts[2]),
+          utilizationPercent: parseNumber(parts[3]),
+          memoryUsedMB,
+          memoryTotalMB,
+          memoryPercent: memoryUsedMB !== null && memoryTotalMB
+            ? Math.round((memoryUsedMB / memoryTotalMB) * 100)
+            : null,
+          powerDrawW: parseNumber(parts[6]),
+          powerLimitW: parseNumber(parts[7])
+        };
+      });
+
+    res.json({
+      enabled: gpus.length > 0,
+      connected: gpus.length > 0,
+      source: "nvidia-smi",
+      gpus
+    });
+  } catch (err) {
+    const unavailable = err.code === "ENOENT" || err.message.includes("nvidia-smi");
+
+    res.json({
+      enabled: false,
+      connected: false,
+      source: "nvidia-smi",
+      reason: unavailable ? "nvidia-smi unavailable" : err.message
     });
   }
 });

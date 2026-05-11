@@ -4,6 +4,7 @@ import AlertCenter from "./components/AlertCenter";
 import TdarrPanel from "./components/TdarrPanel";
 import QuickLaunch from "./components/QuickLaunch";
 import SettingsPanel from "./components/SettingsPanel";
+import GpuTelemetry from "./components/GpuTelemetry";
 
 const API_URL = window.location.hostname === "localhost"
   ? "http://localhost:4000/api/services"
@@ -17,6 +18,7 @@ const NAV_ITEMS = [
   { id: "unraid", label: "Unraid", short: "UR" },
   { id: "media", label: "Media", short: "MD" },
   { id: "tdarr", label: "Tdarr", short: "TD" },
+  { id: "gpu", label: "GPU", short: "GP" },
   { id: "settings", label: "Settings", short: "ST" },
   { id: "ai", label: "AI Stack", short: "AI" },
   { id: "monitoring", label: "Monitoring", short: "MN" }
@@ -151,6 +153,8 @@ function App() {
         <AlertCenter />
 
         <QuickLaunch />
+
+        <GpuTelemetry />
 
         <SettingsPanel />
 
