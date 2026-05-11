@@ -177,11 +177,6 @@ export default function SettingsPanel() {
             )}
           </div>
 
-          <ServiceLinkManager
-            configText={configText}
-            setConfigText={setConfigText}
-          />
-
           {/* JSON Editor */}
           <div>
             <h4 style={{ marginBottom: '12px', color: '#e2e8f0' }}>Raw Configuration</h4>
