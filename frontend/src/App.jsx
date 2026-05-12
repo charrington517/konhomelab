@@ -7,6 +7,7 @@ import SettingsPanel from "./components/SettingsPanel";
 import GpuTelemetry from "./components/GpuTelemetry";
 import GlobalFilterBar from "./components/GlobalFilterBar";
 import HeaderSummaryBar from "./components/HeaderSummaryBar";
+import PlatformReleaseBanner from "./components/PlatformReleaseBanner";
 import PinnedServices from "./components/PinnedServices";
 import ViewModeSelector from "./components/ViewModeSelector";
 import CommandPalette from "./components/CommandPalette";
@@ -161,6 +162,8 @@ function App() {
         </header>
 
         <HeaderSummaryBar services={services} lastUpdated={lastUpdated} />
+
+        <PlatformReleaseBanner />
 
         <ViewModeSelector />
 

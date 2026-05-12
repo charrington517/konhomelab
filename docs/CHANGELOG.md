@@ -1,5 +1,11 @@
 # Changelog
 
+## v6.1 - Platform Release Banner
+
+- Added compact platform identity/release banner near the top of the dashboard.
+- Reuses `/api/platform/summary` for backend status, version, route count, and deploy/start timestamp.
+- Shows frontend/backend status, version/commit fallback, docs sync label, and last checked time.
+
 ## v6.0 - Safe Backend Observability
 
 - Added read-only Backend Observability panel.
