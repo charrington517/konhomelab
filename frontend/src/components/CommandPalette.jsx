@@ -8,6 +8,7 @@ const SECTION_TARGETS = [
   { id: "storage", label: "Storage Ops", keywords: "unraid array disk cache immich nextcloud" },
   { id: "ai", label: "AI Stack", keywords: "ollama openwebui n8n ai dashboard" },
   { id: "network", label: "Network Ops", keywords: "wan cloudflare tunnel dns latency" },
+  { id: "platform", label: "Backend Observability", keywords: "backend frontend api health latency route platform" },
   { id: "tdarr", label: "Tdarr", keywords: "transcode workers nodes queue" },
   { id: "activity", label: "Activity", keywords: "recent events warnings critical" },
   { id: "settings", label: "Settings", keywords: "configuration connection tests json" },

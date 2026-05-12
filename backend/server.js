@@ -4,10 +4,12 @@ const fs = require("fs");
 const axios = require("axios");
 const https = require("https");
 const { execFile } = require("child_process");
+const packageInfo = require("./package.json");
 const testServiceRoutes = require('./routes/testService');
 
 const app = express();
 const PORT = 4000;
+const startedAt = new Date();
 
 app.use(cors());
 app.use(express.json());
@@ -47,6 +49,38 @@ function parseNumber(value) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 }
+
+app.get("/api/platform/summary", (req, res) => {
+  res.json({
+    enabled: true,
+    backend: {
+      online: true,
+      version: packageInfo.version || "unknown",
+      commit: process.env.APP_COMMIT || process.env.GIT_COMMIT || null,
+      uptimeSeconds: Math.floor(process.uptime()),
+      startedAt: startedAt.toISOString(),
+      nodeEnv: process.env.NODE_ENV || "unknown"
+    },
+    frontend: {
+      expectedPort: 3000
+    },
+    api: {
+      routeCount: 10,
+      routes: [
+        "/api/services",
+        "/api/proxmox/summary",
+        "/api/unraid/summary",
+        "/api/media/summary",
+        "/api/qbit/summary",
+        "/api/prowlarr/summary",
+        "/api/tdarr/summary",
+        "/api/gpu/summary",
+        "/api/network/summary",
+        "/api/platform/summary"
+      ]
+    }
+  });
+});
 
 app.get("/api/services", async (req, res) => {
   try {

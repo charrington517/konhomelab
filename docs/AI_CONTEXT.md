@@ -18,7 +18,7 @@ KonHomeLab is a React/Vite homelab operations dashboard running in Docker inside
 
 ## Current Stable State
 
-Stable through v5.6:
+Stable through v6.0:
 
 - Compact command-center layout
 - Sidebar navigation with active section state
@@ -38,6 +38,7 @@ Stable through v5.6:
 - Network Operations
 - AI Stack Overview
 - GPU Telemetry route/UI with safe unavailable fallback
+- Backend Observability panel with API route health, latency, version, and refresh status
 - SettingsPanel with connection testing and raw JSON config editor
 
 ## Rolled Back / Removed

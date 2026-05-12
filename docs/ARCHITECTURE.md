@@ -30,6 +30,7 @@ The frontend is the main command-center UI. It includes:
 - Collapsible section layout memory
 - Alert Center and Recent Activity
 - Infrastructure, Media, Storage, AI, Network, Tdarr, GPU, and service panels
+- Backend Observability for dashboard platform/API health
 - SettingsPanel for connection tests and raw config editing
 
 Client-only state uses browser `localStorage` for pinned services, collapsed sections, and view mode selection.
@@ -41,7 +42,7 @@ Client-only state uses browser `localStorage` for pinned services, collapsed sec
 - API framework: Express
 - Exposed port: `4000`
 
-The backend provides read-only summary data and config-backed health checks for services including Proxmox, Unraid, media apps, Tdarr, GPU fallback telemetry, network checks, and dashboard service health. Settings connection tests also use backend routes.
+The backend provides read-only summary data and config-backed health checks for services including Proxmox, Unraid, media apps, Tdarr, GPU fallback telemetry, network checks, dashboard service health, and platform metadata. Settings connection tests also use backend routes.
 
 ## Configuration
 

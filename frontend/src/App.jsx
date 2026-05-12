@@ -17,6 +17,7 @@ import InfrastructureOperations from "./components/InfrastructureOperations";
 import MediaOperations from "./components/MediaOperations";
 import StorageOperations from "./components/StorageOperations";
 import NetworkOperations from "./components/NetworkOperations";
+import BackendObservability from "./components/BackendObservability";
 import { DEFAULT_FILTERS, filterItems, filteredCountLabel, hasActiveFilters } from "./filterUtils";
 
 const API_URL = window.location.hostname === "localhost"
@@ -35,6 +36,7 @@ const BASE_NAV_ITEMS = [
   { id: "media", label: "Media Ops", short: "MO" },
   { id: "storage", label: "Storage Ops", short: "SO" },
   { id: "network", label: "Network Ops", short: "NO" },
+  { id: "platform", label: "Platform", short: "PF" },
   { id: "tdarr", label: "Tdarr", short: "TD" },
   { id: "gpu", label: "GPU", short: "GP" },
   { id: "settings", label: "Settings", short: "ST" },
@@ -213,6 +215,8 @@ function App() {
         <StorageOperations services={services} filters={filters} />
 
         <NetworkOperations services={services} filters={filters} />
+
+        <BackendObservability />
 
         <SettingsPanel />
 

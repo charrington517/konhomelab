@@ -13,6 +13,7 @@ export const SECTIONS = [
   "ai-stack",
   "gpu-telemetry",
   "network-ops",
+  "platform-observability",
   "tdarr-ops"
 ];
 
@@ -20,7 +21,7 @@ export const MODES = [
   {
     id: "operations",
     label: "Operations View",
-    expanded: ["system-health", "recent-activity", "infrastructure-ops", "pinned-services"]
+    expanded: ["system-health", "recent-activity", "infrastructure-ops", "platform-observability", "pinned-services"]
   },
   {
     id: "media",

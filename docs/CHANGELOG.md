@@ -1,5 +1,12 @@
 # Changelog
 
+## v6.0 - Safe Backend Observability
+
+- Added read-only Backend Observability panel.
+- Added lightweight `/api/platform/summary` metadata route.
+- Shows backend/frontend status, API route health, failed endpoint count, average API latency, last successful refresh, and available version/commit metadata.
+- Removed remaining tracked backup artifacts.
+
 ## v5.7 - Stability + Documentation Sync
 
 - Synced project docs with the dashboard state through v5.6.
