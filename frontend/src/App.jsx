@@ -9,6 +9,7 @@ import GlobalFilterBar from "./components/GlobalFilterBar";
 import HeaderSummaryBar from "./components/HeaderSummaryBar";
 import PinnedServices from "./components/PinnedServices";
 import ViewModeSelector from "./components/ViewModeSelector";
+import CommandPalette from "./components/CommandPalette";
 import SystemHealthOverview from "./components/SystemHealthOverview";
 import RecentActivity from "./components/RecentActivity";
 import AiStackOverview from "./components/AiStackOverview";
@@ -160,6 +161,8 @@ function App() {
         <HeaderSummaryBar services={services} lastUpdated={lastUpdated} />
 
         <ViewModeSelector />
+
+        <CommandPalette services={services} navItems={navItems} />
 
         <GlobalFilterBar
           filters={filters}

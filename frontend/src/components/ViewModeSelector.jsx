@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SECTION_LAYOUT_EVENT, SECTION_STORAGE_PREFIX } from "./CollapsibleSection";
 
-const MODE_KEY = "konhomelab:view-mode";
-const SECTIONS = [
+export const VIEW_MODE_EVENT = "konhomelab:view-mode";
+export const MODE_KEY = "konhomelab:view-mode";
+export const SECTIONS = [
   "pinned-services",
   "system-health",
   "recent-activity",
@@ -15,7 +16,7 @@ const SECTIONS = [
   "tdarr-ops"
 ];
 
-const MODES = [
+export const MODES = [
   {
     id: "operations",
     label: "Operations View",
@@ -51,7 +52,7 @@ function readMode() {
   }
 }
 
-function saveMode(modeId) {
+export function saveMode(modeId) {
   try {
     window.localStorage?.setItem(MODE_KEY, modeId);
   } catch {
@@ -61,7 +62,7 @@ function saveMode(modeId) {
   return true;
 }
 
-function applyMode(mode) {
+export function applyMode(mode) {
   const expanded = new Set(mode.expanded);
 
   SECTIONS.forEach(section => {
@@ -75,11 +76,26 @@ function applyMode(mode) {
   window.dispatchEvent(new CustomEvent(SECTION_LAYOUT_EVENT, {
     detail: { mode: mode.id }
   }));
+
+  window.dispatchEvent(new CustomEvent(VIEW_MODE_EVENT, {
+    detail: { modeId: mode.id }
+  }));
 }
 
 function ViewModeSelector() {
   const [activeMode, setActiveMode] = useState(readMode);
   const [storageAvailable, setStorageAvailable] = useState(true);
+
+  useEffect(() => {
+    function syncMode(event) {
+      if (event.detail?.modeId) {
+        setActiveMode(event.detail.modeId);
+      }
+    }
+
+    window.addEventListener(VIEW_MODE_EVENT, syncMode);
+    return () => window.removeEventListener(VIEW_MODE_EVENT, syncMode);
+  }, []);
 
   function selectMode(mode) {
     setActiveMode(mode.id);
