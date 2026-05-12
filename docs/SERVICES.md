@@ -9,7 +9,7 @@ This file inventories services that KonHomeLab tracks or may integrate with. Kee
 - Role: Virtualization host
 - Host: `192.168.0.50`
 - Dashboard LXC: `291`
-- Used for container status, VM/LXC visibility, and host-level operations.
+- Used for host, VM, LXC, storage, and infrastructure operations visibility.
 
 ### KonHomeLab Dashboard
 
@@ -21,49 +21,77 @@ This file inventories services that KonHomeLab tracks or may integrate with. Kee
 ### Unraid
 
 - Role: Storage/server platform
-- Used for storage/server status and dashboard visibility.
+- Used for Docker container state, array health, disks, capacity, cache pools, and storage service health.
 
 ## Media And Automation Stack
-
-### Tdarr
-
-- Role: Media transcoding/automation
-- Current status integration is working.
 
 ### Sonarr
 
 - Role: TV automation
-- Candidate for service inventory, health checks, and quick launch.
+- Used for queue, missing episodes, health warnings, media pipeline visibility, service health, quick launch, filters, and command palette.
 
 ### Radarr
 
 - Role: Movie automation
-- Candidate for service inventory, health checks, and quick launch.
+- Used for queue, missing movies, health warnings, media pipeline visibility, service health, quick launch, filters, and command palette.
+
+### qBittorrent
+
+- Role: Download client
+- Used for download/upload speed, stalled/error counts, media pipeline visibility, service health, quick launch, filters, and command palette.
+
+### Prowlarr
+
+- Role: Indexer manager
+- Used for enabled indexer counts, warnings, media pipeline visibility, service health, quick launch, filters, and command palette.
+
+### Tdarr
+
+- Role: Media transcoding/automation
+- Used for API status, endpoint warnings, operations panel, media pipeline visibility, service health, quick launch, filters, and command palette.
+
+### Plex / Jellyfin
+
+- Role: Playback/media serving
+- Used through service health, quick launch, filters, and command palette.
+
+## Storage Apps
+
+### Immich
+
+- Role: Photo/media storage
+- Used through service health, Storage Operations, quick launch, filters, and command palette.
+
+### Nextcloud
+
+- Role: File sync/storage
+- Used through service health, Storage Operations, quick launch, filters, and command palette.
 
 ## Monitoring And AI Stack
 
-### Grafana
+### Grafana / Prometheus / Uptime Kuma
 
-- Role: Dashboards/observability
-- Candidate for quick launch and status integration.
+- Role: Observability and monitoring
+- Used through service health, Quick Launch, Pinned Services, Network Operations, filters, and command palette.
 
 ### Ollama
 
 - Role: Local model runtime
-- Candidate for AI orchestration and GPU telemetry workflows.
+- Candidate for deeper AI Stack and GPU telemetry workflows.
 
 ### OpenWebUI
 
 - Role: Local AI web UI
-- Candidate for AI operations center links and status visibility.
+- Used through AI Stack service health and command palette when configured.
 
 ### n8n
 
 - Role: Automation workflows
-- Candidate for automation integration and dashboard controls.
+- Used through AI Stack service health and command palette when configured.
 
 ## Inventory Rules
 
 - Add new services here before wiring new UI controls.
-- Document the purpose, health-check method, and safe integration path.
+- Document purpose, health-check method, and safe integration path.
 - Do not commit API keys, tokens, service passwords, or private webhook secrets.
+- Prefer read-only visibility before adding any controls.

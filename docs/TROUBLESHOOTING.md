@@ -10,7 +10,8 @@ Likely causes:
 - Undefined React component
 - Malformed JSX
 - Stale frontend bundle
-- Broken route or sidebar integration
+- Broken route/sidebar integration
+- Browser localStorage edge case in client-only UI state
 
 Immediate actions:
 
@@ -53,10 +54,37 @@ Important lesson:
 Required validation:
 
 - Build frontend.
-- Deploy frontend.
+- Deploy frontend if code changed.
 - Open dashboard.
 - Check browser console.
 - Verify the changed feature manually.
+
+## Client-Side Layout State
+
+Current localStorage-backed UI:
+
+- Pinned Services
+- Collapsed/expanded sections
+- Dashboard view mode
+
+If layout state behaves strangely:
+
+1. Test in a private/incognito window.
+2. Clear the relevant browser site data if needed.
+3. Verify the dashboard still works with empty localStorage.
+
+## Command Palette
+
+Shortcut:
+
+- Windows/Linux: `Ctrl+K`
+- macOS: `Cmd+K`
+
+If it does not open:
+
+- Confirm the page has focus.
+- Use the visible `Command Palette` button.
+- Check for browser console errors.
 
 ## Stale Bundle Or Container Confusion
 
@@ -84,4 +112,4 @@ git log --oneline -10
 git status --short
 ```
 
-Also inspect `.before-*` backup files when they exist, but prefer git commits as the source of truth.
+Prefer git commits as the source of truth. Do not keep tracked `.backup` or `.before-*` files as rollback strategy.

@@ -1,74 +1,63 @@
 # KonHomeLab AI Context
 
-This file is persistent engineering memory for AI-assisted development in this repo. Keep it concise and current. It should contain architecture, stable components, known failures, coding standards, deployment process, current goals, limitations, what already broke, and what is safe.
-
-Do not use this file for raw chat logs, secrets, temporary troubleshooting spam, or emotional/contextual discussion that does not affect engineering decisions.
+Persistent engineering memory for AI-assisted development in this repo. Keep this file concise, current, and operational. Do not use it for raw chat logs, secrets, temporary troubleshooting spam, or notes that do not affect engineering decisions.
 
 ## Project Overview
 
-KonHomeLab is a React/Vite homelab dashboard running in Docker inside Proxmox LXC container `291`.
+KonHomeLab is a React/Vite homelab operations dashboard running in Docker inside Proxmox LXC container `291`.
 
 - Proxmox host: `192.168.0.50`
-- LXC container: `291`
+- Dashboard LXC: `291`
 - Project path: `/opt/konhomelab`
 - Primary dashboard URL: `http://192.168.0.101:3000`
 - Cloudflare tunnel URL: `https://command.konhomelab.com`
-
-Frontend:
-
-- React
-- Vite
-- Nginx container
-- Project path: `/opt/konhomelab/frontend`
-
-Backend:
-
-- Node.js API
-- Express server
-- Docker container
-- Project path: `/opt/konhomelab/backend`
-
-Config and orchestration:
-
+- Frontend: React, Vite, Nginx container, exposed on port `3000`
+- Backend: Node.js, Express, exposed on port `4000`
 - Config: `/opt/konhomelab/config/services.json`
-- Docker Compose: `/opt/konhomelab/docker-compose.yml`
+- Orchestration: `/opt/konhomelab/docker-compose.yml`
 
 ## Current Stable State
 
-Working:
+Stable through v5.6:
 
+- Compact command-center layout
+- Sidebar navigation with active section state
+- System Health Overview
+- Header summary bar
+- Recent Activity feed
 - Alert Center
 - Quick Launch
-- SettingsPanel
-- Sidebar navigation
-- Proxmox status
-- Tdarr status
-- Connection testing
-- JSON config editor
-- Proxmox, Unraid, and media stack integration
-- Cross-system monitoring
+- Pinned Services with browser `localStorage`
+- Global search and quick filters
+- Collapsible operational sections with layout memory
+- Dashboard view modes: Operations, Media, AI, Storage, Compact All
+- Keyboard Command Palette via `Ctrl+K` / `Cmd+K`
+- Proxmox status and Infrastructure Operations
+- Unraid-driven Storage Operations
+- Media Operations: Sonarr, Radarr, qBittorrent, Prowlarr, Tdarr, Plex/Jellyfin health
+- Network Operations
+- AI Stack Overview
+- GPU Telemetry route/UI with safe unavailable fallback
+- SettingsPanel with connection testing and raw JSON config editor
 
-Rolled back:
+## Rolled Back / Removed
 
-- SettingsForms
-- ServiceLinkManager
+- `SettingsForms`
+- `ServiceLinkManager`
 
 Reason:
 
-- Runtime import failures caused a React blank screen.
+- Runtime import and component integration failures caused React blank screens. Keep Settings changes small and validate runtime behavior before committing.
 
 ## Critical Lessons Learned
 
 - Build success does not guarantee runtime success.
-- Runtime imports have repeatedly failed.
+- Runtime imports have repeatedly failed when components were added too quickly.
 - Known failure examples:
   - `SettingsForms is not defined`
   - `ServiceLinkManager is not defined`
-- JSX generated through shell heredocs caused broken syntax.
-- Known generated-JSX failures:
-  - Missing quotes
-  - Malformed JSX attributes
-- The safest strategy is single-file edits, small changes only, and runtime validation after every build.
+- JSX generated through shell heredocs caused malformed syntax and missing quotes.
+- Prefer existing component patterns, small diffs, and runtime validation after every build.
 
 ## Critical Rules
 
@@ -80,6 +69,7 @@ Reason:
 - For frontend work, check browser/runtime console errors when possible.
 - Keep edits narrow and aligned with the existing component patterns.
 - Never include secrets, passwords, tokens, or API keys in commits or docs.
+- Do not keep backup artifacts in git; use checkpoint commits for rollback.
 
 ## Required Safe Workflow
 
@@ -95,134 +85,80 @@ git commit -m "Checkpoint before <task>"
 
 After any frontend change:
 
-1. Run the frontend build:
-
-```bash
-docker compose build frontend
-```
-
-2. If the build succeeds, deploy the frontend:
-
-```bash
-docker compose up -d frontend
-```
-
-3. Verify in the browser:
-
-- No blank screen
-- No console errors
-- The feature works
-
+1. Run `docker compose build frontend`.
+2. If the build succeeds, run `docker compose up -d frontend`.
+3. Verify browser runtime:
+   - No blank screen
+   - Desktop console errors: `0`
+   - Changed feature works
 4. Only then commit the final change.
+
+After backend changes:
+
+1. Run `docker compose build backend`.
+2. Deploy the affected service.
+3. Curl the changed endpoint.
+4. Verify frontend still loads if the backend feeds UI state.
 
 Rollback immediately on:
 
 - Blank screen
 - Console `ReferenceError`
 - Runtime import failure
-- Broken navigation or settings access
+- Broken navigation or Settings access
 
 ## Forbidden Actions
 
 - No JSX via shell heredocs.
-- No multi-component integrations in one step.
+- No broad Settings rewrites.
 - No runtime imports without validation.
+- No destructive service controls unless explicitly requested.
+- No modifying secrets/config writing during read-only dashboard work.
 - No claiming success before runtime verification.
-- No modifying backend during frontend-only tasks.
 
 ## Preferred Editing Strategy
 
 Good:
 
-- Edit existing JSX.
-- Make inline modifications.
-- Prefer CSS polish.
-- Prefer sidebar tweaks.
+- Edit existing JSX/components.
+- Add small isolated components only when their imports are verified.
+- Prefer CSS polish and read-only panels.
 - Keep diffs small.
-- Work on one feature at a time.
+- Use existing localStorage/event patterns for client-only UI state.
 
 Bad:
 
-- New component integrations without a clear validation path.
-- Multi-file refactors.
+- Multi-file rewrites without validation points.
 - Shell-generated JSX.
 - Runtime imports that are not verified first.
+- Reintroducing rolled-back Settings components.
 
-## Safe Frontend Workflow
-
-1. Run `git status --short`.
-2. Create a checkpoint commit before edits.
-3. Review the relevant files before editing.
-4. Make one isolated change only.
-5. Run `docker compose build frontend`.
-6. If the build passes, run `docker compose up -d frontend`.
-7. Check container status.
-8. Verify the dashboard loads, has no console errors, and the feature works.
-9. Commit only after validation succeeds.
-
-## Current Development Goals
+## Current Development Direction
 
 Near-term:
 
-- Sidebar polish
-- Active nav highlighting
-- Sticky nav
-- Collapsible mobile nav
-- Section icons
-- Visual improvements
-- Safer UX improvements
+- Stability and documentation sync
+- Operational readability
+- Better runbooks and troubleshooting notes
+- Small read-only improvements
 
 Long-term:
 
 - AI orchestration
-- Infrastructure monitoring
-- Docker controls
-- GPU telemetry
+- Infrastructure monitoring depth
+- Docker controls with strong safeguards
+- GPU telemetry across AI Core and Unraid/Tdarr sources
 - Automation integration
-- Cloudflare remote access
-- AI agent operations center
+- Authentication and role-aware controls
 
 ## Common Commands
 
-Access the LXC container from the Proxmox host:
-
-```bash
-pct exec 291 -- bash
-```
-
-Project directory inside the LXC:
-
 ```bash
 cd /opt/konhomelab
-```
-
-View containers:
-
-```bash
+git status --short
 docker compose ps
-```
-
-Build frontend:
-
-```bash
 docker compose build frontend
-```
-
-Deploy frontend:
-
-```bash
+docker compose build backend
 docker compose up -d frontend
-```
-
-Check recent commits:
-
-```bash
 git log --oneline -10
 ```
-
-## Deployment Notes
-
-- The frontend container exposes port `3000`.
-- The backend container exposes port `4000`.
-- Prefer rebuilding only the affected service.
-- If the dashboard breaks, inspect git history and `.before-*` backup files before making larger repairs.

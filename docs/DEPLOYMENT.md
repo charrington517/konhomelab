@@ -4,21 +4,23 @@ Use this file for stable deployment commands and validation steps.
 
 ## Access
 
-From the Proxmox host:
+Direct development access:
+
+```bash
+ssh codexdev@192.168.0.101
+cd /opt/konhomelab
+```
+
+Fallback from the Proxmox host:
 
 ```bash
 pct exec 291 -- bash
-```
-
-Inside the LXC:
-
-```bash
 cd /opt/konhomelab
 ```
 
 ## Required Pre-Change Check
 
-Before any code change:
+Before any code or docs change:
 
 ```bash
 git status --short
@@ -28,19 +30,37 @@ git commit -m "Checkpoint before <task>"
 
 If the working tree has unrelated changes, inspect them before committing or editing.
 
-## Frontend Build
+## Builds
+
+Frontend:
 
 ```bash
 docker compose build frontend
 ```
 
-## Frontend Deploy
+Backend:
+
+```bash
+docker compose build backend
+```
+
+## Deploy
+
+Deploy only when code or runtime assets changed. Documentation-only changes do not require deploy.
+
+Frontend:
 
 ```bash
 docker compose up -d frontend
 ```
 
-## Container Status
+Backend:
+
+```bash
+docker compose up -d backend
+```
+
+Container status:
 
 ```bash
 docker compose ps
@@ -58,17 +78,23 @@ After frontend deployment, verify:
 - The dashboard loads at `http://192.168.0.101:3000`.
 - There is no blank screen.
 - The browser console has no runtime errors.
-- The changed feature works.
 - Sidebar and Settings access still work.
+- Operator UI works when changed:
+  - View modes
+  - Command palette
+  - Pinned services
+  - Filters
+  - Collapsible sections
 
 ## Final Commit
 
-Only after build, deploy, and runtime verification:
+Only after build and runtime verification:
 
 ```bash
 git status --short
-git add <changed-files>
+git add .
 git commit -m "<clear change summary>"
+git push
 ```
 
 ## Compose Warning
