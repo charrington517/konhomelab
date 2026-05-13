@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { getWorkspaceSectionState, saveWorkspaceSectionState } from "../workspaceState";
 
 const STORAGE_PREFIX = "konhomelab:section:";
 export const SECTION_STORAGE_PREFIX = STORAGE_PREFIX;
@@ -6,7 +7,9 @@ export const SECTION_LAYOUT_EVENT = "konhomelab:section-layout";
 
 function readCollapsed(sectionKey) {
   try {
-    return window.localStorage?.getItem(`${STORAGE_PREFIX}${sectionKey}`) === "collapsed";
+    const workspaceState = getWorkspaceSectionState(sectionKey);
+    const saved = workspaceState || window.localStorage?.getItem(`${STORAGE_PREFIX}${sectionKey}`);
+    return saved === "collapsed";
   } catch {
     return false;
   }
@@ -14,7 +17,9 @@ function readCollapsed(sectionKey) {
 
 function saveCollapsed(sectionKey, collapsed) {
   try {
-    window.localStorage?.setItem(`${STORAGE_PREFIX}${sectionKey}`, collapsed ? "collapsed" : "expanded");
+    const state = collapsed ? "collapsed" : "expanded";
+    window.localStorage?.setItem(`${STORAGE_PREFIX}${sectionKey}`, state);
+    saveWorkspaceSectionState(sectionKey, state);
     return true;
   } catch {
     return false;

@@ -1628,6 +1628,23 @@ a {
   font-weight: 700;
 }
 
+.workspace-restore {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 30px;
+  margin: -4px 0 10px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  background: rgba(22, 101, 52, 0.14);
+  color: #bbf7d0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
 .legend-dot.critical,
 .legend-dot.unavailable,
 .legend-dot.offline {

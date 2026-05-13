@@ -1,5 +1,12 @@
 # Changelog
 
+## v7.1 - Workspace Persistence + Session Restore
+
+- Added centralized client-side workspace state for dashboard filters, view mode, section layout, and last opened section.
+- Restores search/status/category filters and last focused section on dashboard load.
+- Keeps existing pinned services, operator notes, trends, and diagnostics local-storage behavior intact.
+- Added safe fallback handling for unavailable or corrupted workspace storage.
+
 ## v7.0 - Quick Actions Layer (Safe Mode)
 
 - Added compact non-destructive quick actions for service and operations cards.

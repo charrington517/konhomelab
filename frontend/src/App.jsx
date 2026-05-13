@@ -24,6 +24,13 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { DEFAULT_FILTERS, filterItems, filteredCountLabel, hasActiveFilters } from "./filterUtils";
 import { fetchSystemHealth } from "./healthUtils";
 import { QUICK_REFRESH_EVENT } from "./quickActions";
+import {
+  getWorkspaceFilters,
+  getWorkspaceLastSection,
+  readWorkspaceState,
+  saveWorkspaceFilters,
+  saveWorkspaceLastSection
+} from "./workspaceState";
 
 const API_URL = window.location.hostname === "localhost"
   ? "http://localhost:4000/api/services"
@@ -57,13 +64,35 @@ function App() {
   const [gpuSummary, setGpuSummary] = useState(null);
   const [systemHealth, setSystemHealth] = useState([]);
   const [systemHealthLastScan, setSystemHealthLastScan] = useState("");
-  const [activeSection, setActiveSection] = useState("overview");
-  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [activeSection, setActiveSection] = useState(() => getWorkspaceLastSection("overview"));
+  const [filters, setFilters] = useState(() => getWorkspaceFilters(DEFAULT_FILTERS));
+  const [workspaceNotice, setWorkspaceNotice] = useState("");
 
   useEffect(() => {
     refreshDashboard();
     const timer = setInterval(refreshDashboard, 15000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const workspace = readWorkspaceState();
+    if (workspace.corrupted) {
+      setWorkspaceNotice("Workspace reset safely");
+    } else if (workspace.restored) {
+      setWorkspaceNotice("Workspace restored");
+    } else if (!workspace.available) {
+      setWorkspaceNotice("Session-only workspace");
+    }
+
+    const targetSection = workspace.state.lastSection;
+    if (targetSection && targetSection !== "overview" && !window.location.hash) {
+      window.setTimeout(() => {
+        document.getElementById(targetSection)?.scrollIntoView({ block: "start" });
+      }, 500);
+    }
+
+    const clearNotice = window.setTimeout(() => setWorkspaceNotice(""), 2600);
+    return () => window.clearTimeout(clearNotice);
   }, []);
 
   useEffect(() => {
@@ -128,7 +157,12 @@ function App() {
         }
       });
 
-      setActiveSection(current);
+      setActiveSection(previous => {
+        if (previous !== current) {
+          saveWorkspaceLastSection(current);
+        }
+        return current;
+      });
     };
 
     updateActiveSection();
@@ -205,9 +239,18 @@ function App() {
 
         <CommandPalette services={services} navItems={navItems} />
 
+        {workspaceNotice && (
+          <div className="workspace-restore" role="status">
+            {workspaceNotice}
+          </div>
+        )}
+
         <GlobalFilterBar
           filters={filters}
-          onChange={setFilters}
+          onChange={(nextFilters) => {
+            setFilters(nextFilters);
+            saveWorkspaceFilters(nextFilters);
+          }}
           totalServices={services.length}
           visibleServices={filteredServices.length}
         />

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { SECTION_LAYOUT_EVENT, SECTION_STORAGE_PREFIX } from "./CollapsibleSection";
 import { MODES, SECTIONS, applyMode, saveMode } from "./ViewModeSelector";
 import { copyText, openExternalUrl, pingUrl, quickActionEvent } from "../quickActions";
+import { saveWorkspaceSectionState } from "../workspaceState";
 
 const SECTION_TARGETS = [
   { id: "infrastructure-ops", label: "Infrastructure Ops", keywords: "proxmox lxc vm docker ops" },
@@ -19,7 +20,9 @@ const SECTION_TARGETS = [
 function setSectionState(collapsed) {
   SECTIONS.forEach(section => {
     try {
-      window.localStorage?.setItem(`${SECTION_STORAGE_PREFIX}${section}`, collapsed ? "collapsed" : "expanded");
+      const state = collapsed ? "collapsed" : "expanded";
+      window.localStorage?.setItem(`${SECTION_STORAGE_PREFIX}${section}`, state);
+      saveWorkspaceSectionState(section, state);
     } catch {
       // The layout event still updates mounted sections for the current session.
     }
