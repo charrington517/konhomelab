@@ -3,6 +3,7 @@ import axios from "axios";
 import CollapsibleSection from "./CollapsibleSection";
 import { sortByPriority, withPriority } from "../alertPriority";
 import { updateTrend } from "../trendUtils";
+import OperatorNote from "./OperatorNote";
 
 const API_BASE = `http://${window.location.hostname}:4000/api`;
 
@@ -260,6 +261,7 @@ export default function RecentActivity() {
                   <span>{event.source} / {event.severity}</span>
                 </div>
                 <p>{event.detail}</p>
+                <OperatorNote noteKey={`event:${event.source}:${event.title}`} label={`${event.source} event`} />
               </div>
               <time>
                 {event.timestamp}

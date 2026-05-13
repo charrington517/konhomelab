@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import CollapsibleSection from "./CollapsibleSection";
 import { withPriority } from "../alertPriority";
 import { updateTrend } from "../trendUtils";
+import OperatorNote from "./OperatorNote";
 
 function Metric({ title, value, label, danger, tone }) {
   return (
@@ -62,6 +63,7 @@ function SystemHealthOverview({ systems = [], lastScan = "" }) {
             <span>{system.status}</span>
             {system.status !== "healthy" && <em className={`priority-chip ${system.priority}`}>{system.priorityLabel}</em>}
             <em className={`trend-chip ${system.trend?.state || "stable"}`}>{system.trend?.label || "stable"}</em>
+            <OperatorNote noteKey={`health:${system.name}`} label={`${system.name} health`} />
           </div>
         ))}
       </div>

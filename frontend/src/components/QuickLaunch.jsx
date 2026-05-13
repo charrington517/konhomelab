@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { DEFAULT_FILTERS, filterItems, hasActiveFilters } from "../filterUtils";
+import OperatorNote from "./OperatorNote";
 
 export default function QuickLaunch({ services: providedServices, filters }) {
   const [loadedServices, setLoadedServices] = useState([]);
@@ -70,12 +71,9 @@ export default function QuickLaunch({ services: providedServices, filters }) {
         )}
 
         {sorted.map((service) => (
-          <a
+          <article
             key={service.name}
-            href={service.url}
-            target="_blank"
-            rel="noreferrer"
-            className="service-card"
+            className="service-card quicklaunch-card"
             style={{
               minHeight: '120px',
               display: 'flex',
@@ -109,10 +107,11 @@ export default function QuickLaunch({ services: providedServices, filters }) {
                 {service.status}
               </span>
               <span>
-                Launch
+                <a href={service.url} target="_blank" rel="noreferrer">Launch</a>
               </span>
             </div>
-          </a>
+            <OperatorNote noteKey={`service:${service.name}`} label={service.name} />
+          </article>
         ))}
       </div>
     </section>

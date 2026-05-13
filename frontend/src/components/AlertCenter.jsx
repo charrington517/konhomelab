@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { sortByPriority, withPriority } from "../alertPriority";
 import { updateTrend } from "../trendUtils";
+import OperatorNote from "./OperatorNote";
 
 function trendKey(alert) {
   return `alert:${alert.source}:${alert.title}`;
@@ -296,6 +297,7 @@ export default function AlertCenter() {
               <p className="alert-detail">
                 {alert.detail}
               </p>
+              <OperatorNote noteKey={`alert:${alert.source}:${alert.title}`} label={`${alert.source} alert`} />
               <div className="card-bottom">
                 <span className={`priority-badge ${alert.priority || "info"}`}>{alert.priorityLabel || "Info"}</span>
                 <span className={`trend-chip ${alert.trend?.state || "stable"}`}>{alert.trend?.label || "stable"}</span>

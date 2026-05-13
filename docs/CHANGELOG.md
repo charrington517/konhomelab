@@ -1,5 +1,11 @@
 # Changelog
 
+## v6.7 - Operator Notes / Local Annotations
+
+- Added local-only operator notes for alerts, recent activity, health items, and Quick Launch service cards.
+- Added compact known-issue note chips with add, edit, and remove behavior using browser storage only.
+- Preserved read-only dashboard behavior with safe fallback when local storage is unavailable.
+
 ## v6.6 - Time Awareness + Trend Context
 
 - Added client-side rolling trend history using browser storage only.
