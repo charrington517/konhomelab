@@ -3,6 +3,7 @@ import axios from "axios";
 import packageInfo from "../../package.json";
 import CollapsibleSection, { SECTION_STORAGE_PREFIX } from "./CollapsibleSection";
 import { MODE_KEY, MODES, SECTIONS } from "./ViewModeSelector";
+import { trendSummary } from "../trendUtils";
 
 const API_BASE = `http://${window.location.hostname}:4000/api`;
 const PINNED_KEY = "konhomelab:pinned-services";
@@ -76,6 +77,7 @@ function DiagnosticsPanel({ lastUpdated = "" }) {
     viewMode: "operations",
     collapsedCount: 0,
     pinnedCount: 0,
+    trends: { tracked: 0, samples: 0 },
     errors: { count: 0, lastTimestamp: "" }
   });
 
@@ -138,6 +140,7 @@ function DiagnosticsPanel({ lastUpdated = "" }) {
     const viewMode = readText(MODE_KEY, "operations");
     const pinned = readJson(PINNED_KEY, []);
     const errors = readJson(ERROR_KEY, { count: 0, lastTimestamp: "" });
+    const trends = trendSummary();
     const collapsedCount = SECTIONS.filter(section => (
       readText(`${SECTION_STORAGE_PREFIX}${section}`) === "collapsed"
     )).length;
@@ -147,6 +150,7 @@ function DiagnosticsPanel({ lastUpdated = "" }) {
       viewMode,
       collapsedCount,
       pinnedCount: Array.isArray(pinned) ? pinned.length : 0,
+      trends,
       errors: {
         count: Number(errors.count) || 0,
         lastTimestamp: errors.lastTimestamp || ""
@@ -220,6 +224,14 @@ function DiagnosticsPanel({ lastUpdated = "" }) {
         <div className="diagnostic-row">
           <span>Error boundary events</span>
           <strong>{runtimeState.errors.count}</strong>
+        </div>
+        <div className="diagnostic-row">
+          <span>Trend history</span>
+          <strong>{runtimeState.trends.tracked} tracked</strong>
+        </div>
+        <div className="diagnostic-row">
+          <span>Trend samples</span>
+          <strong>{runtimeState.trends.samples}</strong>
         </div>
         <div className="diagnostic-row wide">
           <span>Last boundary error</span>

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import CollapsibleSection from "./CollapsibleSection";
 import { withPriority } from "../alertPriority";
+import { updateTrend } from "../trendUtils";
 
 function Metric({ title, value, label, danger, tone }) {
   return (
@@ -19,6 +20,9 @@ function SystemHealthOverview({ systems = [], lastScan = "" }) {
       severity: system.status === "critical" ? "critical" : system.status === "warning" || system.status === "unavailable" ? "warning" : "info",
       title: `${system.name} ${system.status}`,
       detail: system.status
+    })).map(system => ({
+      ...system,
+      trend: updateTrend(`health:${system.name}`, system.status)
     }))
   ), [systems]);
 
@@ -57,6 +61,7 @@ function SystemHealthOverview({ systems = [], lastScan = "" }) {
             <strong>{system.name}</strong>
             <span>{system.status}</span>
             {system.status !== "healthy" && <em className={`priority-chip ${system.priority}`}>{system.priorityLabel}</em>}
+            <em className={`trend-chip ${system.trend?.state || "stable"}`}>{system.trend?.label || "stable"}</em>
           </div>
         ))}
       </div>

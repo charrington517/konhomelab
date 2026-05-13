@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { sortByPriority, withPriority } from "../alertPriority";
+import { updateTrend } from "../trendUtils";
+
+function trendKey(alert) {
+  return `alert:${alert.source}:${alert.title}`;
+}
 
 export default function AlertCenter() {
   const [alerts, setAlerts] = useState([]);
@@ -220,7 +225,13 @@ export default function AlertCenter() {
       });
     }
 
-    setAlerts(sortByPriority(nextAlerts.map(withPriority)));
+    setAlerts(sortByPriority(nextAlerts.map(alert => {
+      const prioritized = withPriority(alert);
+      return {
+        ...prioritized,
+        trend: updateTrend(trendKey(prioritized), prioritized.level || prioritized.priority)
+      };
+    })));
     setLastScan(new Date().toLocaleTimeString());
   }
 
@@ -287,7 +298,7 @@ export default function AlertCenter() {
               </p>
               <div className="card-bottom">
                 <span className={`priority-badge ${alert.priority || "info"}`}>{alert.priorityLabel || "Info"}</span>
-                <span>Alert</span>
+                <span className={`trend-chip ${alert.trend?.state || "stable"}`}>{alert.trend?.label || "stable"}</span>
               </div>
             </div>
           ))}

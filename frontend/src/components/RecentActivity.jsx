@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import CollapsibleSection from "./CollapsibleSection";
 import { sortByPriority, withPriority } from "../alertPriority";
+import { updateTrend } from "../trendUtils";
 
 const API_BASE = `http://${window.location.hostname}:4000/api`;
 
@@ -14,7 +15,11 @@ function eventKey(event) {
 }
 
 function addEvent(events, severity, source, title, detail, timestamp, priority) {
-  events.push(withPriority({ severity, source, title, detail, timestamp, priority }));
+  const event = withPriority({ severity, source, title, detail, timestamp, priority });
+  events.push({
+    ...event,
+    trend: updateTrend(`event:${source}:${title}`, severity)
+  });
 }
 
 function buildEvents({ services, proxmox, unraid, media, qbit, prowlarr, tdarr, gpu, platform, previousStatuses, timestamp }) {
@@ -256,7 +261,10 @@ export default function RecentActivity() {
                 </div>
                 <p>{event.detail}</p>
               </div>
-              <time>{event.timestamp}</time>
+              <time>
+                {event.timestamp}
+                <span className={`trend-chip ${event.trend?.state || "stable"}`}>{event.trend?.label || "stable"}</span>
+              </time>
             </div>
           ))
         )}

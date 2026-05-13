@@ -1,5 +1,11 @@
 # Changelog
 
+## v6.6 - Time Awareness + Trend Context
+
+- Added client-side rolling trend history using browser storage only.
+- Added compact stable, improving, degraded, flapping, and persistent trend labels for alerts, activity, and health status.
+- Added diagnostics visibility for tracked trend history and sample count.
+
 ## v6.5 - Smart Alert Prioritization
 
 - Added client-side Critical, High, Medium, Low, and Info priority ranking for operational alerts and events.

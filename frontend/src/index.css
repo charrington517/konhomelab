@@ -1235,6 +1235,49 @@ a {
   border-color: rgba(14, 165, 233, 0.22);
 }
 
+.trend-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 19px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: #cbd5e1;
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  font-size: 10px;
+  font-weight: 800;
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.trend-chip.stable {
+  color: #86efac;
+  border-color: rgba(34, 197, 94, 0.2);
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.trend-chip.improving {
+  color: #bae6fd;
+  border-color: rgba(14, 165, 233, 0.22);
+  background: rgba(14, 165, 233, 0.08);
+}
+
+.trend-chip.degraded,
+.trend-chip.persistent {
+  color: #fed7aa;
+  border-color: rgba(251, 146, 60, 0.26);
+  background: rgba(251, 146, 60, 0.1);
+}
+
+.trend-chip.flapping {
+  color: #fecaca;
+  border-color: rgba(248, 113, 113, 0.28);
+  background: rgba(248, 113, 113, 0.12);
+}
+
 .empty-card {
   color: #64748b;
   display: grid;
@@ -1271,6 +1314,10 @@ a {
 
 .health-pill .priority-chip {
   margin-left: auto;
+}
+
+.health-pill .trend-chip {
+  margin-left: 0;
 }
 
 .health-pill.healthy {
@@ -1396,6 +1443,12 @@ a {
   color: var(--text-muted);
   font-size: 12px;
   white-space: nowrap;
+}
+
+.activity-row time {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .activity-main p {
