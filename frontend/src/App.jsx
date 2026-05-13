@@ -20,6 +20,7 @@ import StorageOperations from "./components/StorageOperations";
 import NetworkOperations from "./components/NetworkOperations";
 import BackendObservability from "./components/BackendObservability";
 import { DEFAULT_FILTERS, filterItems, filteredCountLabel, hasActiveFilters } from "./filterUtils";
+import { fetchSystemHealth } from "./healthUtils";
 
 const API_URL = window.location.hostname === "localhost"
   ? "http://localhost:4000/api/services"
@@ -50,14 +51,34 @@ function App() {
   const [lastUpdated, setLastUpdated] = useState("");
   const [proxmox, setProxmox] = useState(null);
   const [gpuSummary, setGpuSummary] = useState(null);
+  const [systemHealth, setSystemHealth] = useState([]);
+  const [systemHealthLastScan, setSystemHealthLastScan] = useState("");
   const [activeSection, setActiveSection] = useState("overview");
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
 
   useEffect(() => {
-    fetchServices();
-    const timer = setInterval(fetchServices, 15000);
+    refreshDashboard();
+    const timer = setInterval(refreshDashboard, 15000);
     return () => clearInterval(timer);
   }, []);
+
+  async function refreshDashboard() {
+    await Promise.allSettled([
+      fetchServices(),
+      refreshSystemHealth()
+    ]);
+  }
+
+  async function refreshSystemHealth() {
+    try {
+      const health = await fetchSystemHealth();
+      setSystemHealth(health.systems);
+      setSystemHealthLastScan(health.lastScan);
+    } catch {
+      setSystemHealth([]);
+      setSystemHealthLastScan("");
+    }
+  }
 
   async function fetchServices() {
     try {
@@ -161,7 +182,7 @@ function App() {
           </div>
         </header>
 
-        <HeaderSummaryBar services={services} lastUpdated={lastUpdated} />
+        <HeaderSummaryBar services={services} lastUpdated={lastUpdated} systems={systemHealth} />
 
         <PlatformReleaseBanner />
 
@@ -185,7 +206,7 @@ function App() {
 
         <PinnedServices services={services} filters={filters} />
 
-        <SystemHealthOverview />
+        <SystemHealthOverview systems={systemHealth} lastScan={systemHealthLastScan} />
 
         <RecentActivity />
 

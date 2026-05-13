@@ -1,5 +1,11 @@
 # Changelog
 
+## v6.2 - Performance + Polling Optimization
+
+- Centralized shared system health polling for the header summary bar and System Health Overview.
+- Removed duplicate 15-second health endpoint polling from child components.
+- Preserved the existing compact dashboard behavior while reducing repeated API calls and rerenders.
+
 ## v6.1 - Platform Release Banner
 
 - Added compact platform identity/release banner near the top of the dashboard.

@@ -1,8 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import { useMemo } from "react";
 import CollapsibleSection from "./CollapsibleSection";
-
-const API_BASE = `http://${window.location.hostname}:4000/api`;
 
 function Metric({ title, value, label, danger, tone }) {
   return (
@@ -14,78 +11,7 @@ function Metric({ title, value, label, danger, tone }) {
   );
 }
 
-function statusFor(result, evaluate) {
-  if (result.status === "rejected" || !result.value) {
-    return "unavailable";
-  }
-
-  const data = result.value.data;
-  if (data?.enabled === false) {
-    return "unavailable";
-  }
-
-  if (data?.error || data?.connected === false) {
-    return "critical";
-  }
-
-  return evaluate(data);
-}
-
-function SystemHealthOverview() {
-  const [systems, setSystems] = useState([]);
-  const [lastScan, setLastScan] = useState("");
-
-  useEffect(() => {
-    fetchHealth();
-    const timer = setInterval(fetchHealth, 15000);
-    return () => clearInterval(timer);
-  }, []);
-
-  async function fetchHealth() {
-    const endpoints = [
-      ["Proxmox", `${API_BASE}/proxmox/summary`, data => {
-        const stoppedGuests = data.guests?.filter(guest => guest.status !== "running").length || 0;
-        return stoppedGuests > 0 ? "warning" : "healthy";
-      }],
-      ["Unraid", `${API_BASE}/unraid/summary`, data => {
-        if (data.array?.state && data.array.state !== "STARTED") return "critical";
-        if ((data.docker?.stopped || 0) > 0) return "warning";
-        return "healthy";
-      }],
-      ["Media", `${API_BASE}/media/summary`, data => {
-        if (data.sonarr?.connected === false || data.radarr?.connected === false) return "critical";
-        if ((data.sonarr?.healthWarnings || 0) > 0 || (data.radarr?.healthWarnings || 0) > 0) return "warning";
-        return "healthy";
-      }],
-      ["qBittorrent", `${API_BASE}/qbit/summary`, data => {
-        if ((data.counts?.errored || 0) > 0) return "critical";
-        if ((data.counts?.stalled || 0) > 0) return "warning";
-        return "healthy";
-      }],
-      ["Prowlarr", `${API_BASE}/prowlarr/summary`, data => {
-        if ((data.counts?.healthWarnings || 0) > 0) return "warning";
-        return "healthy";
-      }],
-      ["Tdarr", `${API_BASE}/tdarr/summary`, data => {
-        if ((data.warnings?.length || 0) > 0) return "warning";
-        return "healthy";
-      }],
-      ["GPU", `${API_BASE}/gpu/summary`, data => (
-        data.enabled ? "healthy" : "unavailable"
-      )]
-    ];
-
-    const results = await Promise.allSettled(
-      endpoints.map(([, url]) => axios.get(url, { timeout: 7000 }))
-    );
-
-    setSystems(endpoints.map(([name, , evaluate], index) => ({
-      name,
-      status: statusFor(results[index], evaluate)
-    })));
-    setLastScan(new Date().toLocaleTimeString());
-  }
-
+function SystemHealthOverview({ systems = [], lastScan = "" }) {
   const counts = useMemo(() => {
     return systems.reduce((next, system) => {
       next[system.status] += 1;
