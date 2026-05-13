@@ -19,6 +19,7 @@ import MediaOperations from "./components/MediaOperations";
 import StorageOperations from "./components/StorageOperations";
 import NetworkOperations from "./components/NetworkOperations";
 import BackendObservability from "./components/BackendObservability";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { DEFAULT_FILTERS, filterItems, filteredCountLabel, hasActiveFilters } from "./filterUtils";
 import { fetchSystemHealth } from "./healthUtils";
 
@@ -184,7 +185,9 @@ function App() {
 
         <HeaderSummaryBar services={services} lastUpdated={lastUpdated} systems={systemHealth} />
 
-        <PlatformReleaseBanner />
+        <ErrorBoundary label="Platform Release Banner" variant="section">
+          <PlatformReleaseBanner />
+        </ErrorBoundary>
 
         <ViewModeSelector />
 
@@ -204,13 +207,21 @@ function App() {
           <Metric title="Refresh" value="15s" label="Automatic health scan" />
         </section>
 
-        <PinnedServices services={services} filters={filters} />
+        <ErrorBoundary label="Pinned Services" variant="section">
+          <PinnedServices services={services} filters={filters} />
+        </ErrorBoundary>
 
-        <SystemHealthOverview systems={systemHealth} lastScan={systemHealthLastScan} />
+        <ErrorBoundary label="System Health Overview" variant="section">
+          <SystemHealthOverview systems={systemHealth} lastScan={systemHealthLastScan} />
+        </ErrorBoundary>
 
-        <RecentActivity />
+        <ErrorBoundary label="Recent Activity" variant="section">
+          <RecentActivity />
+        </ErrorBoundary>
 
-        <InfrastructureOperations filters={filters} />
+        <ErrorBoundary label="Infrastructure Operations" variant="section">
+          <InfrastructureOperations filters={filters} />
+        </ErrorBoundary>
 
         <section className="hero-panel">
           <div>
@@ -226,23 +237,41 @@ function App() {
           </div>
         </section>
 
-        <AlertCenter />
+        <ErrorBoundary label="Alert Center" variant="section">
+          <AlertCenter />
+        </ErrorBoundary>
 
-        <QuickLaunch services={services} filters={filters} />
+        <ErrorBoundary label="Quick Launch" variant="section">
+          <QuickLaunch services={services} filters={filters} />
+        </ErrorBoundary>
 
-        <GpuTelemetry summary={gpuSummary} />
+        <ErrorBoundary label="GPU Telemetry" variant="section">
+          <GpuTelemetry summary={gpuSummary} />
+        </ErrorBoundary>
 
-        <AiStackOverview services={services} filters={filters} />
+        <ErrorBoundary label="AI Stack Overview" variant="section">
+          <AiStackOverview services={services} filters={filters} />
+        </ErrorBoundary>
 
-        <MediaOperations services={services} filters={filters} />
+        <ErrorBoundary label="Media Operations" variant="section">
+          <MediaOperations services={services} filters={filters} />
+        </ErrorBoundary>
 
-        <StorageOperations services={services} filters={filters} />
+        <ErrorBoundary label="Storage Operations" variant="section">
+          <StorageOperations services={services} filters={filters} />
+        </ErrorBoundary>
 
-        <NetworkOperations services={services} filters={filters} />
+        <ErrorBoundary label="Network Operations" variant="section">
+          <NetworkOperations services={services} filters={filters} />
+        </ErrorBoundary>
 
-        <BackendObservability />
+        <ErrorBoundary label="Backend Observability" variant="section">
+          <BackendObservability />
+        </ErrorBoundary>
 
-        <SettingsPanel />
+        <ErrorBoundary label="Settings" variant="section">
+          <SettingsPanel />
+        </ErrorBoundary>
 
         {proxmox && proxmox.enabled && (
           <section id="proxmox" className="section">
@@ -287,7 +316,9 @@ function App() {
           </section>
         )}
 
-        <TdarrPanel />
+        <ErrorBoundary label="Tdarr" variant="section">
+          <TdarrPanel />
+        </ErrorBoundary>
 
         {Object.entries(groups).map(([group, items]) => {
           const sectionId = group.toLowerCase().replace(/\s+/g, '-');

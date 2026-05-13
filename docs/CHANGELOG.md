@@ -1,5 +1,11 @@
 # Changelog
 
+## v6.3 - Error Boundary + Blank Screen Protection
+
+- Added app-level React error boundary protection around the dashboard root.
+- Added compact section-level fallbacks around higher-risk operational panels.
+- Added dark fallback UI with reload action, timestamp, safe error message, and browser console guidance.
+
 ## v6.2 - Performance + Polling Optimization
 
 - Centralized shared system health polling for the header summary bar and System Health Overview.
