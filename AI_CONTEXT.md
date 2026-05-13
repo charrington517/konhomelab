@@ -18,7 +18,7 @@ KonHomeLab is a React/Vite homelab operations dashboard running in Docker inside
 
 ## Current Stable State
 
-Stable through v6.1:
+Stable through v6.7:
 
 - Compact command-center layout
 - Sidebar navigation with active section state
@@ -32,6 +32,9 @@ Stable through v6.1:
 - Collapsible operational sections with layout memory
 - Dashboard view modes: Operations, Media, AI, Storage, Compact All
 - Keyboard Command Palette via `Ctrl+K` / `Cmd+K`
+- Smart alert prioritization: Critical, High, Medium, Low, Info
+- Time-aware trend context using client-side rolling history
+- Operator notes/local annotations for alerts, activity, health items, and Quick Launch services
 - Proxmox status and Infrastructure Operations
 - Unraid-driven Storage Operations
 - Media Operations: Sonarr, Radarr, qBittorrent, Prowlarr, Tdarr, Plex/Jellyfin health
@@ -40,7 +43,22 @@ Stable through v6.1:
 - GPU Telemetry route/UI with safe unavailable fallback
 - Backend Observability panel with API route health, latency, version, and refresh status
 - Platform Release Banner with frontend/backend status, version, deploy timestamp, and docs sync label
+- Diagnostics panel for safe runtime state, localStorage status, trend history, and error-boundary state
+- Error Boundary protection for root and higher-risk sections
 - SettingsPanel with connection testing and raw JSON config editor
+
+## Client-Side State
+
+The following features intentionally use browser `localStorage` only:
+
+- Pinned services
+- Global filters and dashboard view/layout memory
+- Collapsed section state
+- Operator notes/local annotations
+- Trend history samples
+- Error Boundary event count/timestamp
+
+This state is local to the browser and is not shared across users or devices. The dashboard must work safely when localStorage is empty or unavailable.
 
 ## Rolled Back / Removed
 
@@ -139,7 +157,7 @@ Bad:
 
 Near-term:
 
-- Stability and documentation sync
+- Stability and documentation sync through v6.7
 - Operational readability
 - Better runbooks and troubleshooting notes
 - Small read-only improvements

@@ -4,7 +4,7 @@ This roadmap is intentionally practical. Prefer small, validated improvements ov
 
 ## Current Stable Baseline
 
-KonHomeLab is now a compact operational command center with read-only visibility across infrastructure, media, storage, AI, network, Tdarr, alerts, recent activity, services, pinned services, filters, collapsible sections, view modes, and a keyboard command palette.
+KonHomeLab is now a compact operational command center with read-only visibility across infrastructure, media, storage, AI, network, Tdarr, alerts, recent activity, services, pinned services, filters, collapsible sections, view modes, diagnostics, trend context, operator notes, and a keyboard command palette.
 
 ## Near-Term
 
@@ -13,6 +13,7 @@ KonHomeLab is now a compact operational command center with read-only visibility
 - Continue small read-only visibility improvements.
 - Refine operational scanability without large redesigns.
 - Add tests or scripted validation where it reduces runtime risk.
+- Keep client-side state features safe when localStorage is unavailable.
 
 ## Infrastructure And Monitoring
 
@@ -22,6 +23,7 @@ KonHomeLab is now a compact operational command center with read-only visibility
 - Service uptime/status history
 - WebSocket or polling improvements for live updates
 - Alert severity tuning
+- Export/import local operator notes if a safe non-secret workflow is needed later
 
 ## AI And Automation
 
@@ -46,3 +48,4 @@ KonHomeLab is now a compact operational command center with read-only visibility
 - Runtime validation before success claims.
 - Roll back immediately on blank screen or console runtime errors.
 - Use checkpoint commits, not backup files, for rollback.
+- Keep operator notes local-only and never use them for secrets.

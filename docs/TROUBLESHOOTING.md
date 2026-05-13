@@ -66,12 +66,51 @@ Current localStorage-backed UI:
 - Pinned Services
 - Collapsed/expanded sections
 - Dashboard view mode
+- Operator notes/local annotations
+- Trend history samples
+- Error Boundary event metadata
+- Diagnostics runtime state
 
 If layout state behaves strangely:
 
 1. Test in a private/incognito window.
 2. Clear the relevant browser site data if needed.
 3. Verify the dashboard still works with empty localStorage.
+
+## Operator Notes
+
+Operator notes are local-only browser annotations. They are not stored on the backend and are not shared across devices.
+
+If notes do not appear or do not persist:
+
+1. Confirm browser site data/localStorage is enabled.
+2. Test in a fresh browser profile or private window.
+3. Verify the dashboard still renders without notes.
+4. Do not store secrets in notes.
+
+## Trend Context
+
+Trend labels are derived from short client-side history. They are hints, not a historical database.
+
+If trend labels look wrong:
+
+1. Refresh once and wait for the next polling cycle.
+2. Clear browser site data to reset local trend history.
+3. Verify Alert Center, Recent Activity, Health Overview, and Diagnostics still render.
+
+## Diagnostics Panel
+
+Use Diagnostics to inspect safe runtime state:
+
+- backend/API health
+- localStorage availability
+- selected view mode
+- collapsed section count
+- pinned services count
+- trend history size
+- Error Boundary events
+
+If Diagnostics itself fails, check the Error Boundary fallback and browser console first.
 
 ## Command Palette
 
@@ -113,3 +152,13 @@ git status --short
 ```
 
 Prefer git commits as the source of truth. Do not keep tracked `.backup` or `.before-*` files as rollback strategy.
+
+Known safe rollback command pattern after a bad frontend runtime deploy:
+
+```bash
+git log --oneline -10
+git reset --hard <last-known-good-commit>
+docker compose up -d --build frontend
+```
+
+Only use `git reset --hard` when intentionally rolling back dashboard code.

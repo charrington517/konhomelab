@@ -2,6 +2,12 @@
 
 This guide covers the daily-use controls added through the compact command-center releases.
 
+## Current Operating Model
+
+KonHomeLab is a read-only command-center dashboard. It aggregates live service, infrastructure, media, storage, AI, network, alert, trend, and diagnostic context without starting, stopping, restarting, or modifying homelab services.
+
+Most personalization features are stored in browser `localStorage`. They are local to the current browser only and are not shared across users, devices, or the backend.
+
 ## View Modes
 
 Use the View Mode selector near the top of the dashboard to switch scan presets:
@@ -82,8 +88,67 @@ Supported sections include:
 
 Collapsed state is stored in browser `localStorage`. Use the command palette or View Mode selector to quickly reset layout.
 
+## Smart Alert Prioritization
+
+Alert Center and Recent Activity assign a client-side priority:
+
+- Critical: disk/parity issues, array state problems, platform/API failures, critical infrastructure outages
+- High: stopped guests, exited containers, unavailable services, unavailable GPU, errored jobs
+- Medium: recurring health warnings, stalled torrents, media/indexer warnings
+- Low: minor endpoint or polling warnings
+- Info: recovery or informational changes
+
+Priority badges are for scanability only. They do not change backend behavior.
+
+## Trend Context
+
+Trend chips summarize recent local history:
+
+- stable
+- improving
+- degraded
+- flapping
+- persistent
+
+Trend history is stored in browser `localStorage` and is intentionally lightweight. If browser data is cleared, trend context restarts from the next dashboard load.
+
+## Operator Notes
+
+Operator notes let you annotate known issues locally, for example:
+
+- `GPU intentionally offline`
+- `disk replacement scheduled`
+- `maintenance in progress`
+- `expected during nightly sync`
+
+Notes are available on:
+
+- Alert Center cards
+- Recent Activity rows
+- System Health pills
+- Quick Launch service cards
+
+Use `Note` to add a note, `Edit` to update it, and `Remove` to clear it. Notes are local-only browser state and must not be used for secrets or shared operational handoff.
+
+## Diagnostics
+
+Diagnostics shows safe runtime context:
+
+- frontend/backend metadata
+- API route health summary
+- localStorage availability
+- active view mode
+- collapsed section count
+- pinned service count
+- trend history count/sample count
+- Error Boundary event count and last timestamp
+
+Use Diagnostics when a dashboard behavior looks odd before making code changes.
+
 ## Safety Notes
 
 - Current operations panels are read-only.
 - Service links open external tools but do not start, stop, restart, or modify services.
 - Settings remains the sensitive area; validate runtime behavior after any Settings change.
+- Operator notes, pinned services, layout memory, trend context, and filters are local browser state.
+- Never store secrets, passwords, API keys, or private tokens in operator notes.

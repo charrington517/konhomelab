@@ -1,5 +1,11 @@
 # Changelog
 
+## v6.8 - Stability + Operator Documentation Sync
+
+- Synced AI project memory and operator docs through v6.7.
+- Documented operator notes, localStorage-backed client features, trend context, diagnostics, alert prioritization, view modes, command palette, and rollback guidance.
+- Rechecked stale component references, sidebar targets, stale imports, and backup artifacts.
+
 ## v6.7 - Operator Notes / Local Annotations
 
 - Added local-only operator notes for alerts, recent activity, health items, and Quick Launch service cards.
