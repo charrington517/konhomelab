@@ -2,6 +2,17 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { DEFAULT_FILTERS, filterItems, hasActiveFilters } from "../filterUtils";
 import OperatorNote from "./OperatorNote";
+import QuickActions from "./QuickActions";
+
+const SECTION_BY_CATEGORY = {
+  Infrastructure: "infrastructure-ops",
+  Business: "business",
+  Monitoring: "monitoring",
+  Media: "media",
+  Storage: "storage",
+  AI: "ai",
+  Network: "network"
+};
 
 export default function QuickLaunch({ services: providedServices, filters }) {
   const [loadedServices, setLoadedServices] = useState([]);
@@ -111,6 +122,13 @@ export default function QuickLaunch({ services: providedServices, filters }) {
               </span>
             </div>
             <OperatorNote noteKey={`service:${service.name}`} label={service.name} />
+            <QuickActions
+              url={service.url}
+              serviceName={service.name}
+              sectionId={SECTION_BY_CATEGORY[service.category] || "quicklaunch"}
+              onRefresh={fetchServices}
+              compact
+            />
           </article>
         ))}
       </div>

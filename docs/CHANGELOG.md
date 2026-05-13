@@ -1,5 +1,12 @@
 # Changelog
 
+## v7.0 - Quick Actions Layer (Safe Mode)
+
+- Added compact non-destructive quick actions for service and operations cards.
+- Added Open, Copy URL, Ping, Refresh, section jump, Proxmox, and Tdarr queue shortcuts where appropriate.
+- Expanded command palette actions with safe refresh, copy URL, ping service, Grafana, and Tdarr queue entries.
+- Preserved the dashboard read-only operating model with client-side fallbacks for clipboard and navigation.
+
 ## v6.8 - Stability + Operator Documentation Sync
 
 - Synced AI project memory and operator docs through v6.7.

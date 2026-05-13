@@ -2,8 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { DEFAULT_FILTERS, filterItems, filteredCountLabel, hasActiveFilters } from "../filterUtils";
 import CollapsibleSection from "./CollapsibleSection";
+import QuickActions from "./QuickActions";
 
 const API_BASE = `http://${window.location.hostname}:4000/api`;
+const PROXMOX_URL = "https://192.168.0.50:8006";
+const UNRAID_URL = "http://192.168.0.55";
 
 function Metric({ title, value, label, danger }) {
   return (
@@ -24,6 +27,11 @@ function stateClass(status) {
   return normalized === "running" || normalized === "online" || normalized === "started"
     ? "online"
     : "offline";
+}
+
+function proxmoxGuestUrl(guest) {
+  const guestType = guest.type === "LXC" ? "lxc" : "qemu";
+  return `${PROXMOX_URL}/#v1:0:=${guestType}/${guest.id}`;
 }
 
 function InfrastructureOperations({ filters = DEFAULT_FILTERS }) {
@@ -116,6 +124,21 @@ function InfrastructureOperations({ filters = DEFAULT_FILTERS }) {
               <span className={guest.status === "running" ? "ok" : "bad"}>{guest.status || "unknown"}</span>
               <span>{guest.type}</span>
             </div>
+            <QuickActions
+              url={proxmoxGuestUrl(guest)}
+              serviceName={guest.name}
+              sectionId="proxmox"
+              onRefresh={fetchInfrastructure}
+              extraActions={[
+                {
+                  id: `proxmox:${guest.type}-${guest.id}`,
+                  className: "open",
+                  label: "Open Proxmox",
+                  run: () => window.open(proxmoxGuestUrl(guest), "_blank", "noopener,noreferrer")
+                }
+              ]}
+              compact
+            />
           </div>
         ))}
       </div>
@@ -149,6 +172,13 @@ function InfrastructureOperations({ filters = DEFAULT_FILTERS }) {
               <span className={container.state === "RUNNING" ? "ok" : "bad"}>{container.state || "unknown"}</span>
               <span>Unraid</span>
             </div>
+            <QuickActions
+              url={UNRAID_URL}
+              serviceName={container.name}
+              sectionId="unraid"
+              onRefresh={fetchInfrastructure}
+              compact
+            />
           </div>
         ))}
       </div>

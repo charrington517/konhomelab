@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import CollapsibleSection from "./CollapsibleSection";
+import QuickActions from "./QuickActions";
+
+const TDARR_URL = "http://192.168.0.55:8265";
 
 function Metric({ title, value, label, danger }) {
   return (
@@ -112,6 +115,21 @@ function TdarrPanel() {
             </span>
             <span>API v2</span>
           </div>
+          <QuickActions
+            url={TDARR_URL}
+            serviceName="Tdarr"
+            sectionId="tdarr"
+            onRefresh={fetchTdarr}
+            extraActions={[
+              {
+                id: "tdarr-queue",
+                className: "open",
+                label: "Open Queue",
+                run: () => window.open(`${TDARR_URL}/queue`, "_blank", "noopener,noreferrer")
+              }
+            ]}
+            compact
+          />
         </div>
 
         {warnings.map(warning => (

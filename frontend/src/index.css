@@ -1571,6 +1571,63 @@ a {
   box-shadow: 0 0 12px rgba(250, 204, 21, 0.48);
 }
 
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.quick-actions.compact {
+  margin-top: 8px;
+}
+
+.quick-action {
+  min-height: 28px;
+  padding: 5px 9px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.72);
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.quick-action:hover,
+.quick-action:focus-visible {
+  border-color: rgba(96, 165, 250, 0.46);
+  color: #eff6ff;
+  outline: none;
+}
+
+.quick-action.open {
+  color: #bfdbfe;
+}
+
+.quick-action.copy {
+  color: #c4b5fd;
+}
+
+.quick-action.ping,
+.quick-action.refresh {
+  color: #bbf7d0;
+}
+
+.quick-action:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.quick-action-status {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .legend-dot.critical,
 .legend-dot.unavailable,
 .legend-dot.offline {
@@ -1773,6 +1830,14 @@ a {
 
   .activity-row time {
     justify-self: start;
+  }
+
+  .quick-actions {
+    gap: 5px;
+  }
+
+  .quick-action {
+    flex: 1 1 auto;
   }
 }
 

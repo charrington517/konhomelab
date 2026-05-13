@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SECTION_LAYOUT_EVENT, SECTION_STORAGE_PREFIX } from "./CollapsibleSection";
 import { MODES, SECTIONS, applyMode, saveMode } from "./ViewModeSelector";
+import { copyText, openExternalUrl, pingUrl, quickActionEvent } from "../quickActions";
 
 const SECTION_TARGETS = [
   { id: "infrastructure-ops", label: "Infrastructure Ops", keywords: "proxmox lxc vm docker ops" },
@@ -60,13 +61,6 @@ function scoreAction(action, terms) {
   return 8;
 }
 
-function openServiceLink(url) {
-  const opened = window.open(url, "_blank", "noopener,noreferrer");
-  if (!opened) {
-    window.location.href = url;
-  }
-}
-
 function CommandPalette({ services = [], navItems = [] }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -119,16 +113,59 @@ function CommandPalette({ services = [], navItems = [] }) {
 
     const serviceActions = services
       .filter(service => service?.name && service?.url)
-      .map(service => ({
+      .flatMap(service => [{
         id: `service:${service.name}`,
         type: "Open",
         label: service.name,
         meta: serviceMeta(service),
         keywords: `${service.category || ""} ${service.status || ""} ${service.url || ""}`,
-        run: () => openServiceLink(service.url)
-      }));
+        run: () => openExternalUrl(service.url)
+      }, {
+        id: `copy:${service.name}`,
+        type: "Copy",
+        label: `Copy ${service.name} URL`,
+        meta: service.url,
+        keywords: `${service.category || ""} clipboard url copy`,
+        run: () => copyText(service.url)
+      }, {
+        id: `ping:${service.name}`,
+        type: "Ping",
+        label: `Ping ${service.name}`,
+        meta: "Read-only reachability check",
+        keywords: `${service.category || ""} latency status reachable`,
+        run: () => pingUrl(service.url)
+      }]);
 
-    return [...sectionActions, ...viewModeActions, ...layoutActions, ...serviceActions];
+    const grafana = services.find(service => /grafana/i.test(service.name || ""));
+    const tdarr = services.find(service => /tdarr/i.test(service.name || ""));
+    const shortcutActions = [
+      {
+        id: "refresh:dashboard",
+        type: "Refresh",
+        label: "Refresh dashboard data",
+        meta: "Request a safe data refresh",
+        keywords: "reload scan fetch services",
+        run: () => window.dispatchEvent(quickActionEvent("dashboard"))
+      },
+      grafana && {
+        id: "open:grafana",
+        type: "Open",
+        label: "Open Grafana",
+        meta: grafana.url,
+        keywords: "metrics monitoring graph",
+        run: () => openExternalUrl(grafana.url)
+      },
+      tdarr && {
+        id: "open:tdarr-queue",
+        type: "Open",
+        label: "Open Tdarr Queue",
+        meta: `${tdarr.url}/queue`,
+        keywords: "transcode worker jobs queue",
+        run: () => openExternalUrl(`${tdarr.url}/queue`)
+      }
+    ].filter(Boolean);
+
+    return [...sectionActions, ...viewModeActions, ...layoutActions, ...shortcutActions, ...serviceActions];
   }, [navItems, services]);
 
   const visibleActions = useMemo(() => {

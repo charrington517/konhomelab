@@ -23,6 +23,7 @@ import DiagnosticsPanel from "./components/DiagnosticsPanel";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { DEFAULT_FILTERS, filterItems, filteredCountLabel, hasActiveFilters } from "./filterUtils";
 import { fetchSystemHealth } from "./healthUtils";
+import { QUICK_REFRESH_EVENT } from "./quickActions";
 
 const API_URL = window.location.hostname === "localhost"
   ? "http://localhost:4000/api/services"
@@ -63,6 +64,15 @@ function App() {
     refreshDashboard();
     const timer = setInterval(refreshDashboard, 15000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    function handleQuickRefresh() {
+      refreshDashboard();
+    }
+
+    window.addEventListener(QUICK_REFRESH_EVENT, handleQuickRefresh);
+    return () => window.removeEventListener(QUICK_REFRESH_EVENT, handleQuickRefresh);
   }, []);
 
   async function refreshDashboard() {
