@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import CollapsibleSection from "./CollapsibleSection";
+import { withPriority } from "../alertPriority";
 
 function Metric({ title, value, label, danger, tone }) {
   return (
@@ -12,8 +13,17 @@ function Metric({ title, value, label, danger, tone }) {
 }
 
 function SystemHealthOverview({ systems = [], lastScan = "" }) {
+  const prioritizedSystems = useMemo(() => (
+    systems.map(system => withPriority({
+      ...system,
+      severity: system.status === "critical" ? "critical" : system.status === "warning" || system.status === "unavailable" ? "warning" : "info",
+      title: `${system.name} ${system.status}`,
+      detail: system.status
+    }))
+  ), [systems]);
+
   const counts = useMemo(() => {
-    return systems.reduce((next, system) => {
+    return prioritizedSystems.reduce((next, system) => {
       next[system.status] += 1;
       return next;
     }, {
@@ -22,7 +32,7 @@ function SystemHealthOverview({ systems = [], lastScan = "" }) {
       critical: 0,
       unavailable: 0
     });
-  }, [systems]);
+  }, [prioritizedSystems]);
 
   return (
     <CollapsibleSection
@@ -41,11 +51,12 @@ function SystemHealthOverview({ systems = [], lastScan = "" }) {
       </div>
 
       <div className="health-strip">
-        {systems.map(system => (
+        {prioritizedSystems.map(system => (
           <div className={`health-pill ${system.status}`} key={system.name}>
             <span className={`legend-dot ${system.status}`}></span>
             <strong>{system.name}</strong>
             <span>{system.status}</span>
+            {system.status !== "healthy" && <em className={`priority-chip ${system.priority}`}>{system.priorityLabel}</em>}
           </div>
         ))}
       </div>

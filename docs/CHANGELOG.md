@@ -1,5 +1,11 @@
 # Changelog
 
+## v6.5 - Smart Alert Prioritization
+
+- Added client-side Critical, High, Medium, Low, and Info priority ranking for operational alerts and events.
+- Prioritized disk/parity issues, platform/API failures, stopped guests, exited containers, unavailable GPU, media warnings, and minor endpoint warnings.
+- Updated Alert Center, Recent Activity, and System Health Overview with compact priority badges while preserving existing severity colors.
+
 ## v6.4 - Safe Diagnostics Panel
 
 - Added read-only Diagnostics panel for runtime troubleshooting.

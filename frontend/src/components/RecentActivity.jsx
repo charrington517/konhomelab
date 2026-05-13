@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import CollapsibleSection from "./CollapsibleSection";
+import { sortByPriority, withPriority } from "../alertPriority";
 
 const API_BASE = `http://${window.location.hostname}:4000/api`;
-const SEVERITY_WEIGHT = { critical: 0, warning: 1, info: 2 };
 
 function normalizeDiskStatus(status) {
   return String(status || "unknown").replace("DISK_", "").toLowerCase();
@@ -13,11 +13,11 @@ function eventKey(event) {
   return `${event.source}-${event.severity}-${event.title}-${event.detail}`;
 }
 
-function addEvent(events, severity, source, title, detail, timestamp) {
-  events.push({ severity, source, title, detail, timestamp });
+function addEvent(events, severity, source, title, detail, timestamp, priority) {
+  events.push(withPriority({ severity, source, title, detail, timestamp, priority }));
 }
 
-function buildEvents({ services, proxmox, unraid, media, qbit, prowlarr, tdarr, previousStatuses, timestamp }) {
+function buildEvents({ services, proxmox, unraid, media, qbit, prowlarr, tdarr, gpu, platform, previousStatuses, timestamp }) {
   const events = [];
   const currentStatuses = {};
 
@@ -159,8 +159,16 @@ function buildEvents({ services, proxmox, unraid, media, qbit, prowlarr, tdarr, 
     addEvent(events, "warning", "Tdarr", "Tdarr endpoint warning", warning, timestamp);
   });
 
-  return Array.from(new Map(events.map(event => [eventKey(event), event])).values())
-    .sort((a, b) => SEVERITY_WEIGHT[a.severity] - SEVERITY_WEIGHT[b.severity] || a.source.localeCompare(b.source))
+  if (gpu?.enabled === false) {
+    addEvent(events, "warning", "GPU", "GPU unavailable", "No local GPU source is currently available", timestamp, "high");
+  }
+
+  if (platform?.routes?.some?.(route => route.ok === false)) {
+    const failed = platform.routes.filter(route => route.ok === false).length;
+    addEvent(events, "critical", "Platform", `${failed} API routes failed`, "Dashboard platform route health needs attention", timestamp);
+  }
+
+  return sortByPriority(Array.from(new Map(events.map(event => [eventKey(event), event])).values()))
     .slice(0, 16);
 }
 
@@ -186,14 +194,16 @@ export default function RecentActivity() {
 
   async function fetchEvents() {
     const timestamp = new Date().toLocaleTimeString();
-    const [services, proxmox, unraid, media, qbit, prowlarr, tdarr] = await Promise.all([
+    const [services, proxmox, unraid, media, qbit, prowlarr, tdarr, gpu, platform] = await Promise.all([
       safeGet("/services"),
       safeGet("/proxmox/summary"),
       safeGet("/unraid/summary"),
       safeGet("/media/summary"),
       safeGet("/qbit/summary"),
       safeGet("/prowlarr/summary"),
-      safeGet("/tdarr/summary")
+      safeGet("/tdarr/summary"),
+      safeGet("/gpu/summary"),
+      safeGet("/platform/summary")
     ]);
 
     setEvents(buildEvents({
@@ -204,6 +214,8 @@ export default function RecentActivity() {
       qbit,
       prowlarr,
       tdarr,
+      gpu,
+      platform,
       previousStatuses,
       timestamp
     }));
@@ -212,6 +224,7 @@ export default function RecentActivity() {
 
   const critical = events.filter(event => event.severity === "critical").length;
   const warnings = events.filter(event => event.severity === "warning").length;
+  const highPriority = events.filter(event => event.priority === "high").length;
 
   return (
     <CollapsibleSection
@@ -225,6 +238,7 @@ export default function RecentActivity() {
       <div className="activity-summary">
         <span><strong>{events.length}</strong> events</span>
         <span><strong>{critical}</strong> critical</span>
+        <span><strong>{highPriority}</strong> high priority</span>
         <span><strong>{warnings}</strong> warnings</span>
       </div>
 
@@ -233,12 +247,12 @@ export default function RecentActivity() {
           <div className="activity-empty">No recent operational events detected.</div>
         ) : (
           events.map((event, index) => (
-            <div className={`activity-row ${event.severity}`} key={`${eventKey(event)}-${index}`}>
-              <span className={`activity-severity ${event.severity}`}>{event.severity}</span>
+            <div className={`activity-row ${event.severity} priority-${event.priority || "info"}`} key={`${eventKey(event)}-${index}`}>
+              <span className={`priority-badge ${event.priority || "info"}`}>{event.priorityLabel || "Info"}</span>
               <div className="activity-main">
                 <div className="activity-title">
                   <strong>{event.title}</strong>
-                  <span>{event.source}</span>
+                  <span>{event.source} / {event.severity}</span>
                 </div>
                 <p>{event.detail}</p>
               </div>

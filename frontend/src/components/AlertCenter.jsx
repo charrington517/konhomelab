@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { sortByPriority, withPriority } from "../alertPriority";
 
 export default function AlertCenter() {
   const [alerts, setAlerts] = useState([]);
@@ -22,13 +23,15 @@ export default function AlertCenter() {
 
   async function fetchAlerts() {
     const host = window.location.hostname;
-    const [proxmox, unraid, media, qbit, prowlarr, tdarr] = await Promise.all([
+    const [proxmox, unraid, media, qbit, prowlarr, tdarr, gpu, platform] = await Promise.all([
       safeGet(`http://${host}:4000/api/proxmox/summary`),
       safeGet(`http://${host}:4000/api/unraid/summary`),
       safeGet(`http://${host}:4000/api/media/summary`),
       safeGet(`http://${host}:4000/api/qbit/summary`),
       safeGet(`http://${host}:4000/api/prowlarr/summary`),
-      safeGet(`http://${host}:4000/api/tdarr/summary`)
+      safeGet(`http://${host}:4000/api/tdarr/summary`),
+      safeGet(`http://${host}:4000/api/gpu/summary`),
+      safeGet(`http://${host}:4000/api/platform/summary`)
     ]);
 
     const nextAlerts = [];
@@ -197,12 +200,33 @@ export default function AlertCenter() {
       });
     }
 
-    setAlerts(nextAlerts);
+    if (gpu?.enabled === false) {
+      nextAlerts.push({
+        level: "warning",
+        source: "GPU",
+        title: "GPU unavailable",
+        detail: "No local GPU source is currently available",
+        priority: "high"
+      });
+    }
+
+    if (platform?.routes?.some?.(route => route.ok === false)) {
+      const failed = platform.routes.filter(route => route.ok === false).length;
+      nextAlerts.push({
+        level: "critical",
+        source: "Platform",
+        title: `${failed} API routes failed`,
+        detail: "Dashboard platform route health needs attention"
+      });
+    }
+
+    setAlerts(sortByPriority(nextAlerts.map(withPriority)));
     setLastScan(new Date().toLocaleTimeString());
   }
 
   const criticalCount = alerts.filter(a => a.level === "critical").length;
   const warningCount = alerts.filter(a => a.level === "warning").length;
+  const highPriorityCount = alerts.filter(a => a.priority === "high").length;
 
   return (
     <section id="alerts" className="section">
@@ -221,9 +245,9 @@ export default function AlertCenter() {
           <p>Immediate attention</p>
         </div>
         <div className={`metric ${warningCount > 0 ? "warning" : ""}`}>
-          <span>Warnings</span>
-          <strong>{warningCount}</strong>
-          <p>Needs review</p>
+          <span>High Priority</span>
+          <strong>{highPriorityCount}</strong>
+          <p>Escalated warnings</p>
         </div>
         <div className="metric">
           <span>Total Alerts</span>
@@ -250,11 +274,11 @@ export default function AlertCenter() {
       ) : (
         <div className="cards">
           {alerts.map((alert, index) => (
-            <div className={`service-card alert-card alert-${alert.level}`} key={`${alert.source}-${alert.title}-${index}`}>
+            <div className={`service-card alert-card alert-${alert.level} priority-${alert.priority || "info"}`} key={`${alert.source}-${alert.title}-${index}`}>
               <div className="card-top">
                 <div>
                   <h3>{alert.title}</h3>
-                  <p>{alert.source}</p>
+                  <p>{alert.source} / {alert.level}</p>
                 </div>
                 <div className={`status-dot ${alert.level === "critical" ? "offline" : "warning"}`} />
               </div>
@@ -262,9 +286,7 @@ export default function AlertCenter() {
                 {alert.detail}
               </p>
               <div className="card-bottom">
-                <span className={alert.level === "critical" ? "bad" : "warn"}>
-                  {alert.level}
-                </span>
+                <span className={`priority-badge ${alert.priority || "info"}`}>{alert.priorityLabel || "Info"}</span>
                 <span>Alert</span>
               </div>
             </div>
