@@ -8,6 +8,28 @@ function friendlyMessage(error) {
   return error.message;
 }
 
+function recordBoundaryEvent(error) {
+  const timestamp = new Date().toLocaleString();
+
+  try {
+    const current = JSON.parse(window.localStorage?.getItem("konhomelab:error-boundary-events") || "{}");
+    const next = {
+      count: (Number(current.count) || 0) + 1,
+      lastTimestamp: timestamp,
+      lastMessage: friendlyMessage(error)
+    };
+
+    window.localStorage?.setItem("konhomelab:error-boundary-events", JSON.stringify(next));
+    window.dispatchEvent(new CustomEvent("konhomelab:error-boundary", {
+      detail: { count: next.count, lastTimestamp: timestamp }
+    }));
+  } catch {
+    window.dispatchEvent(new CustomEvent("konhomelab:error-boundary", {
+      detail: { count: null, lastTimestamp: timestamp }
+    }));
+  }
+}
+
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -25,6 +47,7 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
+    recordBoundaryEvent(error);
     console.error(`${this.props.label || "Dashboard"} render error`, error, errorInfo);
   }
 

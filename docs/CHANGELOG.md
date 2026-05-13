@@ -1,5 +1,11 @@
 # Changelog
 
+## v6.4 - Safe Diagnostics Panel
+
+- Added read-only Diagnostics panel for runtime troubleshooting.
+- Shows frontend/backend metadata, API endpoint summary, local dashboard state, localStorage availability, and error-boundary event state.
+- Reuses existing platform and client-side state without exposing secrets or adding controls.
+
 ## v6.3 - Error Boundary + Blank Screen Protection
 
 - Added app-level React error boundary protection around the dashboard root.

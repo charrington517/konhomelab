@@ -19,6 +19,7 @@ import MediaOperations from "./components/MediaOperations";
 import StorageOperations from "./components/StorageOperations";
 import NetworkOperations from "./components/NetworkOperations";
 import BackendObservability from "./components/BackendObservability";
+import DiagnosticsPanel from "./components/DiagnosticsPanel";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { DEFAULT_FILTERS, filterItems, filteredCountLabel, hasActiveFilters } from "./filterUtils";
 import { fetchSystemHealth } from "./healthUtils";
@@ -40,6 +41,7 @@ const BASE_NAV_ITEMS = [
   { id: "storage", label: "Storage Ops", short: "SO" },
   { id: "network", label: "Network Ops", short: "NO" },
   { id: "platform", label: "Platform", short: "PF" },
+  { id: "diagnostics", label: "Diagnostics", short: "DG" },
   { id: "tdarr", label: "Tdarr", short: "TD" },
   { id: "gpu", label: "GPU", short: "GP" },
   { id: "settings", label: "Settings", short: "ST" },
@@ -267,6 +269,10 @@ function App() {
 
         <ErrorBoundary label="Backend Observability" variant="section">
           <BackendObservability />
+        </ErrorBoundary>
+
+        <ErrorBoundary label="Diagnostics" variant="section">
+          <DiagnosticsPanel lastUpdated={lastUpdated} />
         </ErrorBoundary>
 
         <ErrorBoundary label="Settings" variant="section">
